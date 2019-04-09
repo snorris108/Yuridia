@@ -14,9 +14,8 @@ class Char:
     ability bar - dictionary
     equipment - dictionary
     """
-    def __init__(self, race, stats, inventory, abilities, ability_bar, equipment,
+    def __init__(self, stats, inventory, abilities, ability_bar, equipment,
                  xpos=0, ypos=0, can_move=5, name=''):
-        self.race = race
         self.stats = stats
         self.inventory = inventory
         self.abilities = abilities
@@ -66,7 +65,7 @@ class Char:
               sep='')
 
     def view_inventory(self):
-        gold_padding = ' ' * (60 - 10 - 7 - len(str(gold.quantity)))
+        gold_padding = ' ' * (60 - 10 - 7 - len(self.name) - len(str(gold.quantity)))
         print('{}{}{:>}{:>}'.format(
             "Inventory: ", gold_padding, "Gold: ", gold.quantity), '\n',
               '----+' * 12, sep='')
@@ -83,7 +82,7 @@ class Char:
         xp_fmt = int((1 - ((self.stats["next_level_at"] - self.stats["xp"]) /
                            (self.stats["next_level_at"] - self.stats["prev_level_xp"]))) * 35)
         print(xp_fmt)
-        padding = ' ' * (60 - len(str(self.race + ' (Level ' + str(self.stats["level"]) + ')')) - 2 - 35)
+        padding = ' ' * (60 - len(str(self.stats["race"] + ' (Level ' + str(self.stats["level"]) + ')')) - 2 - 35)
         hp_regen_fmt = ''
         mp_regen_fmt = ''
         melee_boost_fmt = ''
@@ -97,10 +96,11 @@ class Char:
         if self.stats["magic_boost"] != 0:
             magic_boost_fmt = ' ( +' + str(int(self.stats["magic_boost"])) + ')'
         gold_padding = ' ' * (60 - 16 - 10 - len(str(gold.quantity)))
-        print('{:20}{}{:>}{:>}'.format('Character sheet: ', gold_padding, "Gold: ", gold.quantity),
+        print('{:16}{}{}{:>}{:>}'.format(
+            'Character sheet: ', self.name, gold_padding, "Gold: ", gold.quantity),
               '\n', '----+' * 12,
               '\n', '{:^10}{}{}{:35}{}'.format(
-                str(self.race + ' (Level ' + str(self.stats["level"]) + ')'), padding, '[', '=' * xp_fmt, ']'),
+                str(self.stats["race"] + ' (Level ' + str(self.stats["level"]) + ')'), padding, '[', '=' * xp_fmt, ']'),
               '\n', '{:>15}{}{:>14}{:<}'.format(
                 'Health: ', '   ', str(int(self.stats["current_hp"])) + '/' +
                                    str(int(self.stats["base_hp"])), hp_regen_fmt),
@@ -664,6 +664,33 @@ salmon = Item("salmon", 1, 6)
 
 logs = Item("logs", 1, 2)
 worn_hatchet = Tool("worn hatchet", 1, 4, 20)
+
+
+def player():
+    return Char({"race": "human",
+                          "current_hp": 200,
+                          "base_hp": 200,
+                          "hp_regen": 0,
+                          "current_mp": 10,
+                          "base_mp": 10,
+                          "mp_regen": 0,
+                          "base_melee_atk": 14,
+                          "melee_boost": 0,
+                          "base_magic_atk": 25,
+                          "magic_boost": 0,
+                          "level": 1,
+                          "xp": 0,
+                          "prev_level_xp": 0,
+                          "next_level_at": 83},
+                # INVENTORY,
+                [],
+                # ABILITIES
+                {"Str": Strike, "Heal": Heal, "Cbust": Combust},
+                # ABILITY BAR
+                {'1': Strike, '2': '', '3': '', '4': '', '5': '', '6': ''},
+                # EQUIPMENT
+                {'Mainhand': '', 'Offhand': '', 'Head': '', 'Body': '', 'Legs': '', 'Hands': '', 'Feet': '',
+                 'Ring': ''})
 
 
 def thief():

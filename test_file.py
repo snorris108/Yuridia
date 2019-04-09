@@ -249,7 +249,7 @@ def combat_template(mob, hero):
     if mob.stats["magic_boost"] != 0:
         magic_boost_fmt = ' ( +' + str(int(mob.stats["magic_boost"])) + ')'
     print('-' * 60,
-          '\n{:^22}{:16}{:^22}'.format(mob.stats["race"], ' ', hero.race),
+          '\n{:^22}{:16}{:^22}'.format(mob.stats["race"], ' ', hero.stats["race"]),
           '\n{}{:20}{}{:^16}{}{:20}{}'.format(
               '[', '+' * mob_hp_bar, ']', 'Health', '[', '+' * hero_hp_bar, ']'),
           '\n{:>10}{:>11}{:^16}{:<20}'.format(
@@ -401,29 +401,7 @@ def intro():
         load_game()
     else:
         global hero
-        hero = Char("human", {"current_hp": 200,
-                              "base_hp": 200,
-                              "hp_regen": 0,
-                              "current_mp": 10,
-                              "base_mp": 10,
-                              "mp_regen": 0,
-                              "base_melee_atk": 14,
-                              "melee_boost": 0,
-                              "base_magic_atk": 25,
-                              "magic_boost":0,
-                              "level": 1,
-                              "xp": 0,
-                              "prev_level_xp": 0,
-                              "next_level_at": 83},
-                    # INVENTORY,
-                    [],
-                    # ABILITIES
-                    {"Str": Strike, "Heal": Heal, "Cbust": Combust},
-                    # ABILITY BAR
-                    {'1': Strike, '2': '', '3': '', '4': '', '5': '', '6': ''},
-                    # EQUIPMENT
-                    {'Mainhand': '', 'Offhand': '', 'Head': '', 'Body': '', 'Legs': '', 'Hands': '', 'Feet': '',
-                     'Ring': ''})
+        hero = player()
         hero.name = option
     explore1()
 
