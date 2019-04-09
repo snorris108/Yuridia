@@ -66,7 +66,7 @@ class Char:
                                                                str(math.floor(self.stats["base_mp"])))),
               '\n', '{:8}{}'.format("Attack: ", self.stats["base_melee_atk"]),
               '\n', '{:8}{}'.format("M. Attack: ", self.stats["base_magic_atk"]),
-              '\n', "diff: ", difference, '  ', "next: ", self.stats["next_level_at"], "gain: ", levels_gained,
+              # '\n', "diff: ", difference, '  ', "next: ", self.stats["next_level_at"], "gain: ", levels_gained,
               sep='')
 
     def view_inventory(self):

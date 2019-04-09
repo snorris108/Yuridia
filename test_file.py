@@ -659,7 +659,7 @@ def event_roll():
     if rngesus > 75 and hero.dist > 100:
         encounter(random.choice(list_of_bosses), hero)
     elif rngesus > 30:
-        encounter(random.choice(list_of_mobs()), hero)
+        encounter(random.choice(list_of_mobs)(), hero)
     elif rngesus > 10:
         roam()
     else:
