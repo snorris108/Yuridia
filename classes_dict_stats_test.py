@@ -14,9 +14,6 @@ class Char:
     ability bar - dictionary
     equipment - dictionary
     """
-
-    #  current_hp, base_hp, mp, base_mp, base_melee_atk, base_magic_atk,
-    #                  level, xp, prev_level_xp, next_level_at,
     def __init__(self, race, stats, inventory, abilities, ability_bar, equipment,
                  xpos=0, ypos=0, can_move=5, name=''):
         self.race = race
@@ -70,11 +67,12 @@ class Char:
 
     def view_inventory(self):
         gold_padding = ' ' * (60 - 10 - 7 - len(str(gold.quantity)))
-        print('{}{}{:>}{:>}'.format("Inventory: ", gold_padding, "Gold: ", gold.quantity),
-              '\n', '----+' * 12, sep='')
+        print('{}{}{:>}{:>}'.format(
+            "Inventory: ", gold_padding, "Gold: ", gold.quantity), '\n',
+              '----+' * 12, sep='')
         for i in self.inventory:
-            print('{:4}{}{:14}{:>8}'.format(i.quantity, '  ', i.name, i.value),
-                  sep='')
+            print('{:4}{}{:14}{:>8}'.format(
+                i.quantity, '  ', i.name, i.value), sep='')
             print('-' * 60, sep='')
         if not self.inventory:
             print("Your backpack is empty.")
@@ -157,10 +155,11 @@ class Char:
                     mp_regen_fmt = ''
                 if context == "weaponsmith":
                     k = ''
-                print('{:4}{:>11}{:14}{}{}{}{}'.format(hotkey_fmt, k + ': ', v.name,
-                                                       melee_atk_fmt, magic_atk_fmt, hp_regen_fmt, mp_regen_fmt))
+                print('{:4}{:>11}{:14}{}{}{}{}'.format(
+                    hotkey_fmt, k + ': ', v.name, melee_atk_fmt, magic_atk_fmt, hp_regen_fmt, mp_regen_fmt))
             else:
-                print('{:4}{:>9}{:^15}'.format(padding, k, '-----'))
+                print('{:4}{:>9}{:^15}'.format(
+                    padding, k, '-----'))
             hotkey += 1
         # if context != 'during equip or unequip':
         print('----+' * 12,
@@ -249,8 +248,8 @@ class Char:
               sep='')
         for k, v in self.abilities.items():  # k-str (hotkey)  v-function name
             hotkey_fmt = '[' + k + ']'
-            print('{:10}{}'.format(hotkey_fmt, v.__name__),
-                  sep='')
+            print('{:10}{}'.format(
+                hotkey_fmt, v.__name__), sep='')
         print('-' * 30,
               '\n', "Enter the hotkey to select an ability to add.",
               sep='')
@@ -284,12 +283,14 @@ class Char:
                 if self.abilities[a] == v:
                     abil_bar_disp[k] = a
         print("   1       2       3       4       5       6", option1,
-              '\n', '{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{}'.format('{', abil_bar_disp['1'], cell,
-                                                                            abil_bar_disp['2'], cell,
-                                                                            abil_bar_disp['3'], cell,
-                                                                            abil_bar_disp['4'], cell,
-                                                                            abil_bar_disp['5'], cell,
-                                                                            abil_bar_disp['6'], '}', option2),
+              '\n', '{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{}'.format(
+                '{',
+                abil_bar_disp['1'], cell,
+                abil_bar_disp['2'], cell,
+                abil_bar_disp['3'], cell,
+                abil_bar_disp['4'], cell,
+                abil_bar_disp['5'], cell,
+                abil_bar_disp['6'], '}', option2),
               sep='')
 
     def consumables(self):
@@ -304,15 +305,15 @@ class Char:
               '\n', '-' * 30, sep='')
         # consumables_list.sort(key=lambda x: x[0])
         if consumables_list:
-            print('{:6}{:15}{:>}'.format('', "Type", "Quantity"),
-                  sep='')
+            print('{:6}{:15}{:>}'.format(
+                '', "Type", "Quantity"), sep='')
             for i in consumables_list:
                 hotkey = "[" + str(i[1]) + "]"
                 cons_type = i[0].name
                 quantity = '(' + str(i[0].quantity) + ')'
                 padding = ' ' * (30 - 6 - len(cons_type) - 8)
-                print('{:6}{}{}{:8}'.format(hotkey, cons_type, padding, quantity),
-                      sep='')
+                print('{:6}{}{}{:8}'.format(
+                    hotkey, cons_type, padding, quantity), sep='')
             print('-' * 30, sep='')
             choice = input("What would you like to consume?\n")
             for i in consumables_list:  # i-list [0-obj, 1-hotkey id]
@@ -366,26 +367,26 @@ class Char:
                 print("Selling:",
                       '\n', '----+' * 13, sep='')
                 if class_type == Gear:
-                    print('{:6}{:20}{:^16}{:^15}{:^8}'.format('      ', "Type", "Damage", "Effect", "Value"),  # HEADER
-                          sep='')
+                    print('{:6}{:20}{:^16}{:^15}{:^8}'.format(
+                        '      ', "Type", "Damage", "Effect", "Value"), sep='')
                 elif class_type == Consumable or class_type == Bait:
-                    print('{:6}{:15}{:>}'.format('', "Type", "Quantity"),
-                          sep='')
+                    print('{:6}{:15}{:>}'.format(
+                        '', "Type", "Quantity"), sep='')
                 else:
-                    print('{:6}{:14}'.format('', "Type"),
-                          sep='')
+                    print('{:6}{:14}'.format(
+                        '', "Type"), sep='')
             else:
                 print(class_type.__name__, ': ',  # TITLE
                       '\n', '----+' * 13, sep='')
                 if class_type == Gear:
-                    print('{:<6}{:<20}{:^10}{:^20}{:^8}'.format('', "Type", "Damage", "Effect", "Value"),  # HEADER
-                          sep='')
+                    print('{:<6}{:<20}{:^10}{:^20}{:^8}'.format(
+                        '', "Type", "Damage", "Effect", "Value"), sep='')
                 elif class_type == Consumable or class_type == Bait:
-                    print('{:6}{:15}{:>}'.format('', "Type", "Quantity"),
-                          sep='')
+                    print('{:6}{:15}{:>}'.format(
+                        '', "Type", "Quantity"), sep='')
                 else:
-                    print('{:6}{:14}'.format('', "Type"),
-                          sep='')
+                    print('{:6}{:14}'.format(
+                        '', "Type"), sep='')
             for i in item_list:
                 if i[0]:  # checks for existence. Had trouble here while unequipping w/o this check.
                     hotkey = '[' + str(i[1]) + ']'  # [ hotkeyid ]
@@ -406,13 +407,12 @@ class Char:
                             regen_str = regen_str + "+" + str(i[0].mp_regen) + "mp/turn"
                         # padding = ' ' * (24 - len(melee_atk) - len(magic_atk)- len(hp_regen) - len(mp_regen)
                         #                  - len(str(value)))
-                        print('{:<6}{:<20}{:^10}{:^20}{:>8}'.format(hotkey, name, atk_str,
-                                                                    regen_str, value),
-                              sep='')
+                        print('{:<6}{:<20}{:^10}{:^20}{:>8}'.format(
+                            hotkey, name, atk_str, regen_str, value), sep='')
                     elif class_type == Consumable or class_type == Bait:
-                        print('{:6}{:14}{:^8}'.format(hotkey, name, i[0].quantity),  # OBSERVATIONS
-                              sep='')
-            print('----+' * 13, sep='')  # END TABLE
+                        print('{:6}{:14}{:^8}'.format(
+                            hotkey, name, i[0].quantity), sep='')
+            print('----+' * 13, sep='')
         return item_list
 
     def regen(self, context):
