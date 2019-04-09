@@ -1,4 +1,3 @@
-# from Yuridia_OneDrive_project.Yuridia_OneDrive import *
 import math
 import random
 

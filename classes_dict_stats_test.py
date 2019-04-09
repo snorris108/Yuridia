@@ -1,6 +1,5 @@
 from abilities_test import *
 
-# from Yuridia.abilities import *
 import math
 import random
 
