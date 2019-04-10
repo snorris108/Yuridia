@@ -174,14 +174,14 @@ def fishing():
 
 def encounter(mob, hero):
     mob.equip()
-    print("You encounter a ", mob.stats["race"], "!", sep='')
+    print("You encounter a ", mob.stats['race'], "!", sep='')
     # Initiates first turn of combat and the encounter's loop.
     combat_template(mob, hero)
     turn_start(mob, hero)
 
 
 def turn_start(mob, hero):
-    while mob.stats["current_hp"] > 0 and hero.stats["current_hp"] > 0:
+    while mob.stats['current_hp'] > 0 and hero.stats['current_hp'] > 0:
         hero.load_ability_bar_display("from combat")
         turn_choice = input().lower()  # bc could be [O] for options
         # turn_choice = turn_choice.lower()  # bc could be [O] for options
@@ -191,7 +191,7 @@ def turn_start(mob, hero):
                 break
         if turn_choice == 't':
             print("You punish your foe.")
-            mob.stats["current_hp"] = 0
+            mob.stats['current_hp'] = 0
             # Runs mob death and checks for hero level up.
             mob.death(hero)
             explore1()
@@ -219,54 +219,47 @@ def turn_start(mob, hero):
                 print("You fail to escape.")
                 mob_turn(mob, hero)
         elif turn_choice == 'xp':
-            print("xp worth: ", mob.stats["xp_worth"])
-    if hero.stats["current_hp"] <= 0:
+            print("xp worth: ", mob.stats['xp_worth'])
+    if hero.stats['current_hp'] <= 0:
         hero.death()
-    # mob.stats["current_hp"] = mob.stats["base_hp"]
+    # mob.stats['current_hp'] = mob.stats['base_hp']
     mob.reset()
     mob.inventory = []
-    hero.stats["current_mp"] += 1
+    hero.stats['current_mp'] += 1
     explore1()
 
 
 def combat_template(mob, hero):
     """Draws the combat 'window' """
     bar_len = 20
-    mob_hp_bar = int((1 - ((mob.stats["base_hp"] - mob.stats["current_hp"]) / mob.stats["base_hp"])) * bar_len)
-    hero_hp_bar = min(int((1 - ((hero.stats["base_hp"] - hero.stats["current_hp"]) / hero.stats["base_hp"])) * bar_len),
+    mob_hp_bar = int((1 - ((mob.stats['base_hp'] - mob.stats['current_hp']) / mob.stats['base_hp'])) * bar_len)
+    hero_hp_bar = min(int((1 - ((hero.stats['base_hp'] - hero.stats['current_hp']) / hero.stats['base_hp'])) * bar_len),
                       bar_len)
     # FORMAT: COMBAT INTERFACE
-    # hp_regen_fmt = ''
     mp_regen_fmt = ''
     melee_boost_fmt = ''
     magic_boost_fmt = ''
-    # if mob.stats["current_hp"]_regen:
-    # hp_regen_fmt = ' (^' + str(int(mob.stats["current_hp"]_regen)) + '^)'
-    if mob.stats["mp_regen"] != 0:
-        mp_regen_fmt = ' (^' + str(int(mob.stats["mp_regen"])) + '^)'
-    if mob.stats["melee_boost"] != 0:
-        melee_boost_fmt = ' ( +' + str(int(mob.stats["melee_boost"])) + ')'
-    if mob.stats["magic_boost"] != 0:
-        magic_boost_fmt = ' ( +' + str(int(mob.stats["magic_boost"])) + ')'
+
+    if mob.stats['mp_regen'] != 0:
+        mp_regen_fmt = f"(^{str(int(mob.stats['mp_regen']))}^)"
+    if mob.stats['melee_boost'] != 0:
+        melee_boost_fmt = f"( +{str(int(mob.stats['melee_boost']))})"
+    if mob.stats['magic_boost'] != 0:
+        magic_boost_fmt = f"( +{str(int(mob.stats['magic_boost']))})"
     print('-' * 60,
-          '\n{:^22}{:16}{:^22}'.format(mob.stats["race"], ' ', hero.stats["race"]),
-          '\n{}{:20}{}{:^16}{}{:20}{}'.format(
-              '[', '+' * mob_hp_bar, ']', 'Health', '[', '+' * hero_hp_bar, ']'),
-          '\n{:>10}{:>11}{:^16}{:<20}'.format(
-              mp_regen_fmt, mob.stats["current_mp"], 'Mana', hero.stats["current_mp"]),
-          '\n{:>10}{:>11}{:^16}{:<20}'.format(
-              melee_boost_fmt, mob.stats["base_melee_atk"], 'Attack',
-              (hero.stats["base_melee_atk"] + hero.stats["melee_boost"])),
-          '\n{:>10}{:>11}{:^16}{:<20}'.format(
-              magic_boost_fmt, mob.stats["current_mp"], 'M. Attack',
-              (hero.stats["base_magic_atk"] + hero.stats["magic_boost"])),
+          f"\n{mob.stats['race']:^22}{'':16}{hero.stats['race']:^22}",
+          f"\n{'['}{'+' * mob_hp_bar:20}{']'}{'Health':^16}{'['}{'+' * hero_hp_bar:20}{']'}",
+          f"\n{mp_regen_fmt:>10}{mob.stats['current_mp']:>11}{'Mana':^16}{hero.stats['current_mp']:<20}",
+          f"\n{melee_boost_fmt:>10}{mob.stats['base_melee_atk']:>11}{'Attack':^16}"
+          f"{(hero.stats['base_melee_atk'] + hero.stats['melee_boost']):<20}",
+          f"\n{magic_boost_fmt:>10}{mob.stats['current_mp']:>11}{'M. Attack':^16}"
+          f"{(hero.stats['base_magic_atk'] + hero.stats['magic_boost']):<20}",
           '\n', '-' * 60,
           sep='')
 
 
 def hero_turn(mob, hero, turn_choice):
     context = "hero's turn"
-    # for k, v in hero.ability_bar.items():  # k-str ('1')  v-function ( Strike() )
     if hero.ability_bar[turn_choice]:
         state = hero.ability_bar[turn_choice](mob, hero, context)
         if state == "ability failed":
@@ -283,57 +276,55 @@ def mob_turn(mob, hero):
     :return: 'dead' flag if mob has been killed to signal end of combat.
     """
     context = "mob's turn"
-    mob.stats["current_mp"] += 1
-    if mob.stats["current_hp"] > 0:  # If enemy not dead yet, enemy's turn;
+    mob.stats['current_mp'] += 1
+
+    if mob.stats['current_hp'] > 0:
         time.sleep(0.3)
         hero.regen('combat')
         mob.regen()
-        choices = ["basic", "ability"]
-        chance = random.choice(choices)  # decides ability v. basic attack
-        # print(chance)
-        if chance == "ability":  # decided to use an ability
-            choices = ["magic", "melee"]
-            chance = random.choice(choices)  # decides melee or magic ability
-            # print(chance)
-            if chance == "magic":  # rolled magic ability
-                if mob.stats["current_mp"] > 3 and (mob.stats["current_hp"] / mob.stats["base_hp"]) < 0.2 and "Heal" in mob.abilities:
-                    mob.abilities["Heal"](mob, hero, context)
-                elif mob.stats["current_mp"] > 18 and "Firaga" in mob.abilities:
-                    mob.abilities["Firaga"](mob, hero, context)
-                elif mob.stats["current_mp"] > 12 and "Fira" in mob.abilities:
-                    mob.abilities["Fira"](mob, hero, context)
-                elif mob.stats["current_mp"] > 6 and "Fire" in mob.abilities:
-                    mob.abilities["Fire"](mob, hero, context)
+        choices = ['basic", "ability']
+        rngesus = random.choice(choices)
+
+        if rngesus == "ability":
+            choices = ['magic", "melee']
+            rngesus = random.choice(choices)
+
+            if rngesus == "magic":
+                if mob.stats['current_mp'] >= 3 and (mob.stats['current_hp'] / mob.stats['base_hp']) < 0.2 \
+                        and "Heal" in mob.abilities:
+                    mob.abilities['Heal'](mob, hero, context)
+                elif mob.stats['current_mp'] >= 18 and "Firaga" in mob.abilities:
+                    mob.abilities['Firaga'](mob, hero, context)
+                elif mob.stats['current_mp'] >= 12 and "Fira" in mob.abilities:
+                    mob.abilities['Fira'](mob, hero, context)
+                elif mob.stats['current_mp'] >= 6 and "Fire" in mob.abilities:
+                    mob.abilities['Fire'](mob, hero, context)
                 else:
                     mob_basic_atk(mob, hero)
-            else:  # rolled melee ability
-                chance = random.randint(1, 10)
-                # print(chance)
-                if chance < 5:
+            else:
+                rngesus = random.randint(1, 10)
+                if rngesus < 5:
                     if "Rush" in mob.abilities:
-                        mob.abilities["Rush"](hero, mob, context)
+                        mob.abilities['Rush'](hero, mob, context)
                     else:
                         mob_basic_atk(mob, hero)
                 else:
                     if "Strike" in mob.abilities:
-                        mob.abilities["Strike"](hero, mob, context)
+                        mob.abilities['Strike'](hero, mob, context)
                     else:
                         mob_basic_atk(mob, hero)
-        else:  # rolled "basic
+        else:
             mob_basic_atk(mob, hero)
-        # Loads up the combat interface
         combat_template(mob, hero)
-    else:  # Otherwise, enemy is dead. End battle without taking damage from that round.
-        # Loads up the combat interface
+    else:
         combat_template(mob, hero)
-        # Runs mob death and checks for hero level up.
         mob.death(hero)
         return 'dead'
 
 
-def mob_basic_atk(x, y):
-    strike = math.floor((x.stats["base_melee_atk"] + x.stats["melee_boost"]) * random.uniform(0.7, 1.1))
-    y.stats["current_hp"] = math.floor(max(y.stats["current_hp"] - strike, 0))
+def mob_basic_atk(mob, target):
+    strike = math.floor((mob.stats['base_melee_atk'] + mob.stats['melee_boost']) * random.uniform(0.7, 1.1))
+    target.stats['current_hp'] = math.floor(max(target.stats['current_hp'] - strike, 0))
     print("You are hit for ", strike, " points.", sep='')
 
 
@@ -342,11 +333,11 @@ def chest():
     Creates chest encounter with option to loot. Evaluates odds of looting items and gear separately.
     :return: None
     """
-    choice = input("You find a small treasure!\nDo you wish to loot it? (Y or N)\n")
-    choice = choice.lower()
+    choice = input("You find a small treasure!\nDo you wish to loot it? (Y or N)\n").lower()
     looted_item = False
     looted_gear = False
     count = 0
+
     if choice == 'y':
         for i in list_of_common_items:
             rngesus = random.randint(1, 100)
@@ -360,29 +351,27 @@ def chest():
                 chest_looting(i)
                 looted_gear = True
                 count += 1
+
         if not looted_item and not looted_gear:
             print("You find nothing of value.")
     else:
         print("You leave it.")
 
 
-def chest_looting(i):
+def chest_looting(item):
     """
     Generates a random number used to evaluate odds of getting item/gear from chest. See below for handling items
     individually.
-    :param i: item/gear instance object
-    :return: False iff nothing was looted successfully.
+    :param item: item/gear instance object
     """
-    if i not in hero.inventory:
-        hero.inventory.append(i)
+    if item not in hero.inventory:
+        hero.inventory.append(item)
+
     num_rolled = random.randrange(1, 4)
-    i.quantity += num_rolled
-    
-    if num_rolled == 1:
-        plural = 'it'
-    else:
-        plural = 'them'
-    print("You find ", num_rolled, ' ', i.name, ", and add ", plural, " to your pack.",
+    item.quantity += num_rolled
+
+    plural = 'it' if num_rolled == 1 else plural = 'them'
+    print("You find ", num_rolled, ' ', item.name, ", and add ", plural, " to your pack.",
           sep='')
 
 
@@ -448,6 +437,7 @@ def compass(mini, maxi, freq, far_message1, far_message2, near_message):
         ycount += 1
     xnearest_event = xcount * freq
     ynearest_event = ycount * freq
+
     if xabs > freq / 2:
         xnearest_event += freq
     if hero.xpos < 0:
@@ -458,14 +448,17 @@ def compass(mini, maxi, freq, far_message1, far_message2, near_message):
         ynearest_event = -ynearest_event
     xrem = xabs % freq
     yrem = yabs % freq
+
     if freq / 2 < xabs < freq:
         xrem = freq - (xabs % freq)
     if freq/2 < yabs < freq:
         yrem = freq - (yabs % freq)
     ratio = 0
     distance = math.sqrt(xrem ** 2 + yrem ** 2)
+
     if xrem != 0:
         ratio = abs(yrem / xrem)
+
     # if you are within range from any direction;
     if mini < distance <= maxi:
         if xrem == 0 or ratio > 2.414:
@@ -528,7 +521,7 @@ def explore2(playing, village, lake):
         elif playing[0] == 'h':
             for _ in playing:
                 x = ''
-                if hero.stats["current_mp"] > 3:
+                if hero.stats['current_mp'] > 3:
                     Heal(x, hero, "hero's turn")
         elif playing == 't':
             encounter(kraken, hero)

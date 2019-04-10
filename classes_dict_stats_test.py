@@ -267,7 +267,7 @@ class Char:
     def learn_ability(self, ability_key, ability_value):
         self.abilities.setdefault(ability_key, ability_value)
         # self.message = self.message + str("\nYou've learned " + ability_key + ". Access your abilities with [A].")
-        print(str("\nYou've learned " + ability_key + ". Access your abilities with [A]."))
+        print(f"You've learned {ability_key}. Access your abilities with [A].")
 
     def load_ability_bar_display(self, context):
         if context == "while viewing character sheet":
