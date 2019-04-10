@@ -311,12 +311,12 @@ def mob_turn(mob, hero):
                 # print(chance)
                 if chance < 5:
                     if "Rush" in mob.abilities:
-                        mob.abilities["Rush"](mob, hero, context)
+                        mob.abilities["Rush"](hero, mob, context)
                     else:
                         mob_basic_atk(mob, hero)
                 else:
                     if "Strike" in mob.abilities:
-                        mob.abilities["Strike"](mob, hero, context)
+                        mob.abilities["Strike"](hero, mob, context)
                     else:
                         mob_basic_atk(mob, hero)
         else:  # rolled "basic

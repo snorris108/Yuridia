@@ -1,31 +1,38 @@
 import math
 import random
 
-def Strike(x, y, context):
+
+def context_msg(context, hero_msg, mob_msg):
     if context == "hero's turn":
-        strike = math.floor((y.stats["base_melee_atk"] + y.stats["melee_boost"]) * random.uniform(0.90, 1.10))
-        x.stats["current_hp"] = math.floor(max(x.stats["current_hp"] - strike, 0))
-        print("You stike your foe for ", strike, " points! ", sep='')
+        print(hero_msg)
     elif context == "mob's turn":
-        strike = math.floor((x.stats["base_melee_atk"] + x.stats["melee_boost"]) * random.uniform(0.90, 1.10))
-        y.stats["current_hp"] = math.floor(max(y.stats["current_hp"] - strike, 0))
-        print("You are struck hard for ", strike, " points! ", sep='')
+        print(mob_msg)
 
 
-def Rush(x, y, context):
-    if context == "hero's turn":
-        y.stats["current_hp"] -= y.stats["base_hp"] * 0.1
-        strike = math.floor((y.stats["base_melee_atk"] + y.stats["melee_boost"]) * random.uniform(2.90, 3.10))
-        x.stats["current_hp"] = math.floor(max(x.stats["current_hp"] - strike, 0))
-        print("You charge at your foe, ruthlessly dealing ", strike, "damage. You take a minor blow in your haste.")
-    elif context == "mob's turn":
-        x.stats["current_hp"] -= x.stats["base_hp"] * 0.1
-        strike = math.floor((x.stats["base_melee_atk"] + x.stats["melee_boost"]) * random.uniform(2.90, 3.10))
-        y.stats["current_hp"] = math.floor(max(y.stats["current_hp"] - strike, 0))
-        print("Enraged, the enemy rushes you! You lose ", strike, " health.", sep='')
+def learn_ability(ability, target):
+    pass
+
+
+def Strike(target, caster, context):
+    strike = math.floor((caster.stats["base_melee_atk"] + caster.stats["melee_boost"]) * random.uniform(0.90, 1.10))
+    target.stats["current_hp"] = math.floor(max(target.stats["current_hp"] - strike, 0))
+    hero_msg = "You stike your foe for " + str(strike) + " points! "
+    mob_msg = "You are struck hard for " + str(strike) + " points! "
+    context_msg(context, hero_msg, mob_msg)
+
+
+def Rush(target, caster, context):
+    strike = math.floor((caster.stats["base_melee_atk"] + caster.stats["melee_boost"]) * random.uniform(2.90, 3.10))
+    target.stats["current_hp"] = math.floor(max(target.stats["current_hp"] - strike, 0))
+    caster.stats["current_hp"] -= caster.stats["base_hp"] * 0.1
+    hero_msg = "You charge at your foe, ruthlessly dealing " + str(strike) + "damage. You take a minor blow in your haste."
+    mob_msg = "Enraged, the enemy rushes you! You lose " + str(strike) + " health."
+    context_msg(context, hero_msg, mob_msg)
+
+    if context == "mob's turn":
         chance = random.randint(1, 10)
-        if "Rush" not in y.abilities and chance < 8:
-            return y.learn_ability("Rush", Rush)
+        if "Rush" not in target.abilities and chance < 8:
+            return target.learn_ability("Rush", Rush)
 
 
 def Fire(x, y, context):
