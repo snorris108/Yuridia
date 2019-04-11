@@ -286,8 +286,8 @@ def mob_turn(mob, hero):
         if mob.stats['current_mp'] >= 3 and (mob.stats['current_hp'] / mob.stats['base_hp']) < 0.2 \
                 and "Heal" in mob.abilities:
             desire_to_heal = 1 - (mob.stats['current_hp'] / mob.stats['base_hp'])
-            odds_to_heal = random.randrange(desire_to_heal, 1)
-            rngesus = random.randint(0, 1)
+            odds_to_heal = random.uniform(desire_to_heal, 1)
+            rngesus = random.uniform(0, 1)
 
             if odds_to_heal >= rngesus:
                 mob.abilities['Heal'](mob, hero, context)

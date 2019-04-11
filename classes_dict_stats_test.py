@@ -481,11 +481,9 @@ class Mob:
         self.stats = self.init_stats
 
     def regen(self):
-        increment = 1
         if self.stats['current_mp'] < self.stats['base_mp']:
-            self.stats['current_mp'] += increment + self.stats['mp_regen']
-        else:
-            self.stats['current_mp'] = self.stats['base_mp']
+            self.stats['current_mp'] = min(self.stats['current_mp'] + self.stats['mp_regen'], self.stats['base_mp'])
+
         if self.stats['current_hp'] < self.stats['base_hp']:
             self.stats['current_hp'] = min(self.stats['current_hp'] + self.stats['hp_regen'], self.stats['base_hp'])
 
@@ -738,7 +736,7 @@ def cultist():
                 "hp_regen": 10,
                 "current_mp": 100,
                 "base_mp": 100,
-                "mp_regen": 0,
+                "mp_regen": 4,
                 "base_melee_atk": 8,
                 "melee_boost": 0,
                 "base_magic_atk": 38,
