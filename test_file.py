@@ -282,6 +282,15 @@ def mob_turn(mob, hero):
         time.sleep(0.3)
         hero.regen('combat')
         mob.regen()
+
+        if mob.stats['current_mp'] >= 3 and (mob.stats['current_hp'] / mob.stats['base_hp']) < 0.2 \
+                and "Heal" in mob.abilities:
+            desire_to_heal = 1 - (mob.stats['current_hp'] / mob.stats['base_hp'])
+            odds_to_heal = random.randrange(desire_to_heal, 1)
+            rngesus = random.randint(0, 1)
+
+            if odds_to_heal >= rngesus:
+                mob.abilities['Heal'](mob, hero, context)
         choices = ['basic", "ability']
         rngesus = random.choice(choices)
 
@@ -290,10 +299,7 @@ def mob_turn(mob, hero):
             rngesus = random.choice(choices)
 
             if rngesus == "magic":
-                if mob.stats['current_mp'] >= 3 and (mob.stats['current_hp'] / mob.stats['base_hp']) < 0.2 \
-                        and "Heal" in mob.abilities:
-                    mob.abilities['Heal'](mob, hero, context)
-                elif mob.stats['current_mp'] >= 18 and "Firaga" in mob.abilities:
+                if mob.stats['current_mp'] >= 18 and "Firaga" in mob.abilities:
                     mob.abilities['Firaga'](mob, hero, context)
                 elif mob.stats['current_mp'] >= 12 and "Fira" in mob.abilities:
                     mob.abilities['Fira'](mob, hero, context)
