@@ -21,7 +21,7 @@ def Strike(target, caster, context):
 
 
 def Rush(target, caster, context):
-    damage = math.floor((caster.stats["base_melee_atk"] + caster.stats["melee_boost"]) * random.uniform(2.90, 3.10))
+    damage = math.floor((caster.stats["base_melee_atk"] + caster.stats["melee_boost"]) * random.uniform(1.90, 2.10))
     target.stats["current_hp"] = math.floor(max(target.stats["current_hp"] - damage, 0))
     caster.stats["current_hp"] -= caster.stats["base_hp"] * 0.1
     player_msg = f"You charge at your foe, ruthlessly dealing {str(damage)} damage. You take a minor blow in your haste."
@@ -32,25 +32,19 @@ def Rush(target, caster, context):
         learn_ability(Rush, 8, target)
 
 
-def Fire(x, y, context):
-    if context == "hero's turn":
-        if y.stats["current_mp"] >= 6:
-            y.stats["current_mp"] -= 6
-            damage = math.floor((y.stats["base_magic_atk"] + y.stats["magic_boost"]) * 1.15 * random.uniform(0.90, 1.10))
-            x.stats["current_hp"] = math.floor(max(x.stats["current_hp"] - damage, 0))
-            print("You cast Fire on your foe for ", damage, " points! ", sep='')
-        else:
-            print("You need 6 mana to cast that.")
-            return "ability failed"
-    elif context == "mob's turn":
-        if x.stats["current_mp"] >= 6:
-            x.stats["current_mp"] -= 6
-            damage = math.floor((x.stats["base_magic_atk"] + x.stats["magic_boost"]) * 1.15 * random.uniform(0.90, 1.10))
-            y.stats["current_hp"] = math.floor(max(y.stats["current_hp"] - damage, 0))
-            print("You are struck by a wild flash of fire! You lose ", damage, " points.", sep='')
-            rngesus = random.randint(1, 10)
-            if "Fire" not in y.abilities and rngesus < 8:
-                y.learn_ability("Fire", Fire)
+def Fire(target, caster, context):
+    if caster.stats["current_mp"] >= 6:
+        caster.stats["current_mp"] -= 6
+        damage = math.floor((caster.stats["base_magic_atk"] + caster.stats["magic_boost"]) * 1.15 * random.uniform(0.90, 1.10))
+        target.stats["current_hp"] = math.floor(max(target.stats["current_hp"] - damage, 0))
+        player_msg = f"You cast Fire on your foe for {str(damage)} points!"
+        mob_msg = f"You are struck by a wild flash of fire! You lose {str(damage)} points."
+    else:
+        print("You need 6 mana to cast that.")
+        return "ability failed"
+
+    if context == "mob's turn":
+        learn_ability(Fire, 8, target)
 
 
 def Fira(x, y, context):

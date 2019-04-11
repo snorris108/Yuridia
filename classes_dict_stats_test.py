@@ -14,6 +14,7 @@ class Char:
     ability bar - dictionary
     equipment - dictionary
     """
+
     def __init__(self, stats, inventory, abilities, ability_bar, equipment,
                  xpos=0, ypos=0, can_move=5, name=''):
         self.stats = stats
@@ -24,9 +25,11 @@ class Char:
         self.message = ''  # what was this for?
         self.xpos = xpos
         self.ypos = ypos
+        self.dist = 0
         self.can_move = can_move
         self.dist = math.floor(math.sqrt(xpos ** 2 + ypos ** 2))  # determines mob difficulty
         self.name = name
+
 
     def level_up(self):
         """
@@ -35,18 +38,18 @@ class Char:
         """
         levels_gained = 0
         difference = 0
-        while self.stats["xp"] > self.stats["next_level_at"]:
-            self.stats["prev_level_xp"] = self.stats["next_level_at"]
-            difference = (math.floor(self.stats["level"] - 1 + 300 * (2 ** ((self.stats["level"] - 1) / 7)))) / 4
-            self.stats["next_level_at"] = self.stats["prev_level_xp"] + difference
+        while self.stats['xp'] > self.stats['next_level_at']:
+            self.stats['prev_level_xp'] = self.stats['next_level_at']
+            difference = (math.floor(self.stats['level'] - 1 + 300 * (2 ** ((self.stats['level'] - 1) / 7)))) / 4
+            self.stats['next_level_at'] = self.stats['prev_level_xp'] + difference
             levels_gained += 1
-            self.stats["level"] += 1
+            self.stats['level'] += 1
 
-        self.stats["current_hp"] += self.stats["base_hp"] * 0.05 * levels_gained
-        self.stats["base_hp"] += (42 * 1.05) * levels_gained
-        self.stats["base_melee_atk"] += 4 * levels_gained
-        self.stats["base_mp"] += 6 * levels_gained
-        self.stats["base_magic_atk"] += 3 * levels_gained
+        self.stats['current_hp'] += self.stats['base_hp'] * 0.05 * levels_gained
+        self.stats['base_hp'] += (42 * 1.05) * levels_gained
+        self.stats['base_melee_atk'] += 4 * levels_gained
+        self.stats['base_mp'] += 6 * levels_gained
+        self.stats['base_magic_atk'] += 3 * levels_gained
         self.can_move += 1  # may need to adjust this number. Currently linear.
 
         # FORMAT: LEVEL-UP NOTIFICATION
@@ -54,24 +57,20 @@ class Char:
               '\n', "Your strength increases.",
               '\n', "You've gained ", levels_gained, " level", ("s" if levels_gained > 1 else ""), ".",
               '\n', '-' * 25,
-              '\n', '{:8}{}'.format("Level: ", self.stats["level"]),
-              '\n', '{:8}{}'.format("Health: ", '{0}/{1}'.format(str(math.floor(self.stats["current_hp"])),
-                                                                 str(math.floor(self.stats["base_hp"])))),
-              '\n', '{:8}{}'.format("Mana: ", '{0}/{1}'.format(str(math.floor(self.stats["current_mp"])),
-                                                               str(math.floor(self.stats["base_mp"])))),
-              '\n', '{:8}{}'.format("Attack: ", self.stats["base_melee_atk"]),
-              '\n', '{:8}{}'.format("M. Attack: ", self.stats["base_magic_atk"]),
-              # '\n', "diff: ", difference, '  ', "next: ", self.stats["next_level_at"], "gain: ", levels_gained,
-              sep='')
+              '\n', f"{'Level: ':8}{self.stats['level']}",
+              '\n', f"{'Health: ':8}",
+              f"{str(math.floor(self.stats['current_hp']))}/{str(math.floor(self.stats['base_hp']))}",
+              '\n', f"{'Mana: ':8}",
+              f"{str(math.floor(self.stats['current_mp']))}/{str(math.floor(self.stats['base_mp']))}",
+              '\n', f"{'Attack: ':8}{self.stats['base_melee_atk']}",
+              '\n', f"{'M. Attack: ':8}{self.stats['base_magic_atk']}", sep='')
 
     def view_inventory(self):
         gold_padding = ' ' * (60 - 10 - 7 - len(self.name) - len(str(gold.quantity)))
-        print('{}{}{:>}{:>}'.format(
-            "Inventory: ", gold_padding, "Gold: ", gold.quantity), '\n',
-              '----+' * 12, sep='')
+        print(f"{'Inventory: '}{gold_padding}{'Gold: ':>}{gold.quantity:>}",
+              '\n', '----+' * 12, sep='')
         for i in self.inventory:
-            print('{:4}{}{:14}{:>8}'.format(
-                i.quantity, '  ', i.name, i.value), sep='')
+            print(f"{i.quantity:4}{'  '}{i.name:14}{i.value:>8}", sep='')
             print('-' * 60, sep='')
         if not self.inventory:
             print("Your backpack is empty.")
@@ -79,42 +78,41 @@ class Char:
 
     def character_sheet(self):
         # FORMAT: CHARACTER SHEET
-        xp_fmt = int((1 - ((self.stats["next_level_at"] - self.stats["xp"]) /
-                           (self.stats["next_level_at"] - self.stats["prev_level_xp"]))) * 35)
+        xp_fmt = int((1 - ((self.stats['next_level_at'] - self.stats['xp']) /
+                           (self.stats['next_level_at'] - self.stats['prev_level_xp']))) * 35)
         print(xp_fmt)
-        padding = ' ' * (60 - len(str(self.stats["race"] + ' (Level ' + str(self.stats["level"]) + ')')) - 2 - 35)
+        padding = ' ' * (60 - len(str(self.stats['race'] + ' (Level ' + str(self.stats['level']) + ')')) - 2 - 35)
         hp_regen_fmt = ''
         mp_regen_fmt = ''
         melee_boost_fmt = ''
         magic_boost_fmt = ''
-        if self.stats["hp_regen"] != 0:
-            hp_regen_fmt = ' (^' + str(int(self.stats["hp_regen"])) + '^)'
-        if self.stats["mp_regen"] != 0:
-            mp_regen_fmt = ' (^' + str(int(self.stats["mp_regen"])) + '^)'
-        if self.stats["melee_boost"] != 0:
-            melee_boost_fmt = ' ( +' + str(int(self.stats["melee_boost"])) + ')'
-        if self.stats["magic_boost"] != 0:
-            magic_boost_fmt = ' ( +' + str(int(self.stats["magic_boost"])) + ')'
+        if self.stats['hp_regen'] != 0:
+            hp_regen_fmt = f"{' (^'}{str(int(self.stats['hp_regen']))}{'^)'}"
+        if self.stats['mp_regen'] != 0:
+            mp_regen_fmt = f"{' (^'}{str(int(self.stats['mp_regen']))}{'^)'}"
+        if self.stats['melee_boost'] != 0:
+            melee_boost_fmt = f"{' ( +'}{str(int(self.stats['melee_boost']))}{')'}"
+        if self.stats['magic_boost'] != 0:
+            magic_boost_fmt = f"{' ( +'}{str(int(self.stats['magic_boost']))}{')'}"
         gold_padding = ' ' * (60 - 16 - 10 - len(str(gold.quantity)))
-        print('{:16}{}{}{:>}{:>}'.format(
-            'Character sheet: ', self.name, gold_padding, "Gold: ", gold.quantity),
-              '\n', '----+' * 12,
-              '\n', '{:^10}{}{}{:35}{}'.format(
-                str(self.stats["race"] + ' (Level ' + str(self.stats["level"]) + ')'), padding, '[', '=' * xp_fmt, ']'),
-              '\n', '{:>15}{}{:>14}{:<}'.format(
-                'Health: ', '   ', str(int(self.stats["current_hp"])) + '/' +
-                                   str(int(self.stats["base_hp"])), hp_regen_fmt),
-              '\n', '{:>15}{}{:>14}{:<}'.format(
-                'Mana: ', '   ', str(self.stats["current_mp"]) + '/' +
-                                 str(self.stats["base_mp"]), mp_regen_fmt),
-              '\n', '{:>15}{}{:>14}{:<}'.format(
-                'Attack: ', '   ', self.stats["base_melee_atk"], melee_boost_fmt),
-              '\n', '{:>15}{}{:>14}{:<}'.format(
-                'M. Attack: ', '   ', self.stats["base_magic_atk"], magic_boost_fmt),
-              '\n', '-' * 60,
-              # '\n', str((self.stats["next_level_at"] - self.stats["xp"]) /
-              # (self.stats["next_level_at"] - self.stats["prev_level_xp"])), '  ', xp_fmt,
-              sep='')
+        print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{gold.quantity:>}",
+              '\n',
+              '----+' * 12,
+              '\n',
+              f"{str(self.stats['race'])}{' (Level '}{str(self.stats['level'])}{')':^10}{padding}{'['}{'=' * xp_fmt:35}"
+              f"{']'}",
+              '\n',
+              f"{'Health: ':>15}{'   '}", "{:>14}{:<}".format(
+                str(int(self.stats['current_hp'])) + '/' + str(int(self.stats['base_hp'])), hp_regen_fmt),
+              '\n',
+              f"{'Mana: ':>15}{'   '}", "{:>14}{:<}".format(
+                str(self.stats['current_mp']) + '/' + str(self.stats['base_mp']), mp_regen_fmt),
+              '\n',
+              f"{'Attack: ':>15}{'   '}{self.stats['base_melee_atk']:>14}{melee_boost_fmt:<}",
+              '\n',
+              f"{'M. Attack: ':>15}{'   '}{self.stats['base_magic_atk']:>14}{magic_boost_fmt:<}",
+              '\n',
+              '-' * 60, sep='')
         self.menu_gear_equipped('while viewing character sheet')
         self.load_ability_bar_display('while viewing character sheet')
         print('\n')
@@ -155,13 +153,11 @@ class Char:
                     mp_regen_fmt = ''
                 if context == "weaponsmith":
                     k = ''
-                print('{:4}{:>11}{:14}{}{}{}{}'.format(
-                    hotkey_fmt, k + ': ', v.name, melee_atk_fmt, magic_atk_fmt, hp_regen_fmt, mp_regen_fmt))
+                print(f"{hotkey_fmt:4}{k + ': ':>11}{v.name:14}{melee_atk_fmt}{magic_atk_fmt}{hp_regen_fmt}"
+                      f"{mp_regen_fmt}")
             else:
-                print('{:4}{:>9}{:^15}'.format(
-                    padding, k, '-----'))
+                print(f"{padding:4}{k:>9}{'-----':^15}")
             hotkey += 1
-        # if context != 'during equip or unequip':
         print('----+' * 12,
               sep='')
 
@@ -215,10 +211,10 @@ class Char:
         if unequipping_obj not in self.inventory:
             self.inventory.append(unequipping_obj)
         ohAtkPenalty = (0.7 if equipping_str == 'Offhand' else 1)
-        self.stats["melee_boost"] -= unequipping_obj.melee_atk * ohAtkPenalty
-        self.stats["magic_boost"] -= unequipping_obj.magic_atk * ohAtkPenalty
-        self.stats["hp_regen"] -= unequipping_obj.hp_regen
-        self.stats["mp_regen"] -= unequipping_obj.mp_regen
+        self.stats['melee_boost'] -= unequipping_obj.melee_atk * ohAtkPenalty
+        self.stats['magic_boost'] -= unequipping_obj.magic_atk * ohAtkPenalty
+        self.stats['hp_regen'] -= unequipping_obj.hp_regen
+        self.stats['mp_regen'] -= unequipping_obj.mp_regen
         self.equipment[equipping_str] = ''
         print("You unequip your ", unequipping_obj.name, '.', sep='')
         unequipping_obj.quantity += 1
@@ -228,10 +224,10 @@ class Char:
             ohAtkPenalty = 0.70
         else:
             ohAtkPenalty = 1
-        self.stats["melee_boost"] += equipping_obj.melee_atk * ohAtkPenalty
-        self.stats["magic_boost"] += equipping_obj.magic_atk * ohAtkPenalty
-        self.stats["hp_regen"] += equipping_obj.hp_regen
-        self.stats["mp_regen"] += equipping_obj.mp_regen
+        self.stats['melee_boost'] += equipping_obj.melee_atk * ohAtkPenalty
+        self.stats['magic_boost'] += equipping_obj.magic_atk * ohAtkPenalty
+        self.stats['hp_regen'] += equipping_obj.hp_regen
+        self.stats['mp_regen'] += equipping_obj.mp_regen
         equipping_obj.quantity -= 1  # decrement or remove item from pack.
         if equipping_obj.quantity == 0:
             self.inventory.remove(equipping_obj)
@@ -248,8 +244,7 @@ class Char:
               sep='')
         for k, v in self.abilities.items():  # k-str (hotkey)  v-function name
             hotkey_fmt = '[' + k + ']'
-            print('{:10}{}'.format(
-                hotkey_fmt, v.__name__), sep='')
+            print(f"{hotkey_fmt:10}{v.__name__}")
         print('-' * 30,
               '\n', "Enter the hotkey to select an ability to add.",
               sep='')
@@ -283,15 +278,13 @@ class Char:
                 if self.abilities[a] == v:
                     abil_bar_disp[k] = a
         print("   1       2       3       4       5       6", option1,
-              '\n', '{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{:^5}{}{}'.format(
-                '{',
-                abil_bar_disp['1'], cell,
-                abil_bar_disp['2'], cell,
-                abil_bar_disp['3'], cell,
-                abil_bar_disp['4'], cell,
-                abil_bar_disp['5'], cell,
-                abil_bar_disp['6'], '}', option2),
-              sep='')
+              '\n',
+              f"{'{'}{abil_bar_disp['1']:^5}{cell}"
+              f"{abil_bar_disp['2']:^5}{cell}"
+              f"{abil_bar_disp['3']:^5}{cell}"
+              f"{abil_bar_disp['4']:^5}{cell}"
+              f"{abil_bar_disp['5']:^5}{cell}"
+              f"{abil_bar_disp['6']:^5}{'}'}{option2}")
 
     def consumables(self):
         consumables_list = []
@@ -305,29 +298,28 @@ class Char:
               '\n', '-' * 30, sep='')
         # consumables_list.sort(key=lambda x: x[0])
         if consumables_list:
-            print('{:6}{:15}{:>}'.format(
-                '', "Type", "Quantity"), sep='')
+            print(f"{'':6}{'Type':15}{'Quantity':>}")
             for i in consumables_list:
-                hotkey = "[" + str(i[1]) + "]"
+                hotkey = '[' + str(i[1]) + ']'
                 cons_type = i[0].name
                 quantity = '(' + str(i[0].quantity) + ')'
                 padding = ' ' * (30 - 6 - len(cons_type) - 8)
-                print('{:6}{}{}{:8}'.format(
-                    hotkey, cons_type, padding, quantity), sep='')
+                print(f"{hotkey:6}{cons_type}{padding}{quantity:8}")
             print('-' * 30, sep='')
             choice = input("What would you like to consume?\n")
+
             for i in consumables_list:  # i-list [0-obj, 1-hotkey id]
                 if choice[0] == str(i[1]):
                     for _ in choice:
                         if i[0] in self.inventory:
                             print("You drink the ", i[0].name, ".", sep='')
-                            self.stats["current_hp"] = self.stats["current_hp"] + i[0].hp_regen
-                            self.stats["current_mp"] = self.stats["current_mp"] + i[0].mp_regen
+                            self.stats['current_hp'] = self.stats['current_hp'] + i[0].hp_regen
+                            self.stats['current_mp'] = self.stats['current_mp'] + i[0].mp_regen
                             # self.stats[ = self.stats[
                             # self.stats[ = self.stats[
                             # self.stats[ = self.stats[
                             if i[0].hp_regen:
-                                print("You now have", math.floor(self.stats["current_hp"]), "hp.")
+                                print("You now have", math.floor(self.stats['current_hp']), "hp.")
                             if i[0].mp_regen:
                                 print("You gain", i[0].mp_regen, "mp.")
                             i[0].quantity -= 1
@@ -367,33 +359,29 @@ class Char:
                 print("Selling:",
                       '\n', '----+' * 13, sep='')
                 if class_type == Gear:
-                    print('{:6}{:20}{:^16}{:^15}{:^8}'.format(
-                        '      ', "Type", "Damage", "Effect", "Value"), sep='')
+                    print(f"{'      ':6}{'Type':20}{'Damage':^16}{'Effect':^15}{'Value':^8}")
                 elif class_type == Consumable or class_type == Bait:
-                    print('{:6}{:15}{:>}'.format(
-                        '', "Type", "Quantity"), sep='')
+                    print("{'':6}{'Type':15}{'Quantity':>}")
                 else:
-                    print('{:6}{:14}'.format(
-                        '', "Type"), sep='')
+                    print(f"{'':6}{'Type':14}")
             else:
-                print(class_type.__name__, ': ',  # TITLE
-                      '\n', '----+' * 13, sep='')
+                print(class_type.__name__, ': ',
+                      '\n',
+                      '----+' * 13, sep='')
                 if class_type == Gear:
-                    print('{:<6}{:<20}{:^10}{:^20}{:^8}'.format(
-                        '', "Type", "Damage", "Effect", "Value"), sep='')
+                    print(f"{'':<6}{'Type':<20}{'Damage':^10}{'Effect':^20}{'Value':^8}")
                 elif class_type == Consumable or class_type == Bait:
-                    print('{:6}{:15}{:>}'.format(
-                        '', "Type", "Quantity"), sep='')
+                    print(f"{'':6}{'Type':15}{'Quantity':>}")
                 else:
-                    print('{:6}{:14}'.format(
-                        '', "Type"), sep='')
+                    print(f"{'':6}{'Type':14}")
+
             for i in item_list:
                 if i[0]:  # checks for existence. Had trouble here while unequipping w/o this check.
                     hotkey = '[' + str(i[1]) + ']'  # [ hotkeyid ]
                     name = i[0].name
                     if class_type == Gear:
                         value = ''
-                        if context == "weaponsmith" or context == "armorsmith" or context == "apothecary":
+                        if context in ['weaponsmith', 'armorsmith', 'apothecary']:
                             value = i[0].value
                         atk_str = ''
                         if i[0].melee_atk:
@@ -405,13 +393,9 @@ class Char:
                             regen_str = regen_str + "+" + str(i[0].hp_regen) + "hp/turn"
                         if i[0].mp_regen:
                             regen_str = regen_str + "+" + str(i[0].mp_regen) + "mp/turn"
-                        # padding = ' ' * (24 - len(melee_atk) - len(magic_atk)- len(hp_regen) - len(mp_regen)
-                        #                  - len(str(value)))
-                        print('{:<6}{:<20}{:^10}{:^20}{:>8}'.format(
-                            hotkey, name, atk_str, regen_str, value), sep='')
+                        print(f"{hotkey:<6}{name:<20}{atk_str:^10}{regen_str:^20}{value:>8}")
                     elif class_type == Consumable or class_type == Bait:
-                        print('{:6}{:14}{:^8}'.format(
-                            hotkey, name, i[0].quantity), sep='')
+                        print(f"{hotkey:6}{name:14}{i[0].quantity:^8}")
             print('----+' * 13, sep='')
         return item_list
 
@@ -421,12 +405,12 @@ class Char:
             increment = 3
         elif context == 'combat':
             increment = 1
-        if self.stats["current_mp"] < self.stats["base_mp"]:
-            self.stats["current_mp"] = \
-                min(self.stats["current_mp"] + increment + self.stats["mp_regen"], self.stats["base_mp"])
-        if self.stats["current_hp"] < self.stats["base_hp"]:
-            self.stats["current_hp"] = \
-                min(self.stats["current_hp"] + self.stats["hp_regen"], self.stats["base_hp"])
+        if self.stats['current_mp'] < self.stats['base_mp']:
+            self.stats['current_mp'] = \
+                min(self.stats['current_mp'] + increment + self.stats['mp_regen'], self.stats['base_mp'])
+        if self.stats['current_hp'] < self.stats['base_hp']:
+            self.stats['current_hp'] = \
+                min(self.stats['current_hp'] + self.stats['hp_regen'], self.stats['base_hp'])
 
     def view_location(self):
 
@@ -440,18 +424,18 @@ class Char:
         self.equipment = {'Mainhand': '', 'Offhand': '', 'Head': '', 'Body': '', 'Legs': '', 'Hands': '',
                           'Feet': '', 'Ring': ''}
         self.inventory = []
-        self.stats["level"] = 1
-        self.stats["xp"] = 0
-        self.stats["current_hp"] = 200
-        self.stats["base_hp"] = 200
-        self.stats["hp_regen"] = 0
-        self.stats["current_mp"] = 10
-        self.stats["base_mp"] = 10
-        self.stats["base_melee_atk"] = 14
-        self.stats["base_magic_atk"] = 25
-        self.stats["mp_regen"] = 0
-        self.stats["melee_boost"] = 0
-        self.stats["magic_boost"] = 0
+        self.stats['level'] = 1
+        self.stats['xp'] = 0
+        self.stats['current_hp'] = 200
+        self.stats['base_hp'] = 200
+        self.stats['hp_regen'] = 0
+        self.stats['current_mp'] = 10
+        self.stats['base_mp'] = 10
+        self.stats['base_melee_atk'] = 14
+        self.stats['base_magic_atk'] = 25
+        self.stats['mp_regen'] = 0
+        self.stats['melee_boost'] = 0
+        self.stats['magic_boost'] = 0
         self.abilities = {"Str": Strike, "Heal": Heal, "Cbust": Combust}
         self.ability_bar = {'1': Strike, '2': '', '3': '', '4': '', '5': '', '6': ''}
 
@@ -483,27 +467,27 @@ class Mob:
                 continue
 
     def equipping(self, equipping_obj):
-        self.stats["melee_boost"] += equipping_obj.melee_atk
-        self.stats["magic_boost"] += equipping_obj.magic_atk
-        self.stats["hp_regen"] += equipping_obj.hp_regen
-        self.stats["mp_regen"] += equipping_obj.mp_regen
+        self.stats['melee_boost'] += equipping_obj.melee_atk
+        self.stats['magic_boost'] += equipping_obj.magic_atk
+        self.stats['hp_regen'] += equipping_obj.hp_regen
+        self.stats['mp_regen'] += equipping_obj.mp_regen
 
     def reset(self):
-        # self.stats["melee_boost"] = self.init_melee_boost
-        # self.stats["magic_boost"] = self.init_magic_boost
-        # self.stats["hp_regen"] = self.init_hp_regen
-        # self.stats["mp_regen"] = self.init_mp_regen
+        # self.stats['melee_boost'] = self.init_melee_boost
+        # self.stats['magic_boost'] = self.init_magic_boost
+        # self.stats['hp_regen'] = self.init_hp_regen
+        # self.stats['mp_regen'] = self.init_mp_regen
 
         self.stats = self.init_stats
 
     def regen(self):
         increment = 1
-        if self.stats["current_mp"] < self.stats["base_mp"]:
-            self.stats["current_mp"] += increment + self.stats["mp_regen"]
+        if self.stats['current_mp'] < self.stats['base_mp']:
+            self.stats['current_mp'] += increment + self.stats['mp_regen']
         else:
-            self.stats["current_mp"] = self.stats["base_mp"]
-        if self.stats["current_hp"] < self.stats["base_hp"]:
-            self.stats["current_hp"] = min(self.stats["current_hp"] + self.stats["hp_regen"], self.stats["base_hp"])
+            self.stats['current_mp'] = self.stats['base_mp']
+        if self.stats['current_hp'] < self.stats['base_hp']:
+            self.stats['current_hp'] = min(self.stats['current_hp'] + self.stats['hp_regen'], self.stats['base_hp'])
 
 
     def plunder(self, hero):
@@ -524,15 +508,15 @@ class Mob:
                 print("You have looted ", quantity_looted, ' ', i.name, '.', sep='')
 
     def death(self, hero):
-        hero.stats["xp"] += self.stats["xp_worth"]
-        # print("xp: ", hero.stats["xp"], "gained: ", self.xp_worth)
-        print("You have slain the ", self.stats["race"], "!", sep='')
+        hero.stats['xp'] += self.stats['xp_worth']
+        # print("xp: ", hero.stats['xp'], "gained: ", self.xp_worth)
+        print("You have slain the ", self.stats['race'], "!", sep='')
         if hero.message:
             print(hero.message)
         hero.message = ''
         # resets mob's hp at end of combat.
         self.plunder(hero)
-        if hero.stats["xp"] > hero.stats["next_level_at"]:
+        if hero.stats['xp'] > hero.stats['next_level_at']:
             hero.level_up()
         self.stats = self.init_stats
 
@@ -747,7 +731,25 @@ def wolves():
                {"Strike": Strike})
 
 
-list_of_mobs = [thief, kaelas_boar, wolves]
+def cultist():
+    return Mob({"race": "cultist",
+                "current_hp": 200,
+                "base_hp": 200,
+                "hp_regen": 10,
+                "current_mp": 100,
+                "base_mp": 100,
+                "mp_regen": 0,
+                "base_melee_atk": 8,
+                "melee_boost": 0,
+                "base_magic_atk": 38,
+                "magic_boost": 0,
+                "level": 1,
+                "xp_worth": 46},
+               [[list_of_common_items], [list_of_bait]],
+               {"Fire": Fire, "Fira": Fira, "Firaga": Firaga, "Heal": Heal, "Rush": Rush})
+
+
+list_of_mobs = [thief, kaelas_boar, wolves, cultist]
 
 
 def giant_kitty():

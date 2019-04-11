@@ -370,7 +370,10 @@ def chest_looting(item):
     num_rolled = random.randrange(1, 4)
     item.quantity += num_rolled
 
-    plural = 'it' if num_rolled == 1 else plural = 'them'
+    if num_rolled == 1:
+        plural = 'it'
+    else:
+        plural = 'them'
     print("You find ", num_rolled, ' ', item.name, ", and add ", plural, " to your pack.",
           sep='')
 
@@ -398,13 +401,13 @@ def intro():
 def explore1():
     print()
     village = compass(4, 12, 100,
-                      "You think you see smoke rising over the treetops to the ", "",
+                      "You think you see smoke rising over the treetops to the ",
                       "Your path forks off toward a village.")
     lake = compass(6, 18, 120,
-                   "A gentle river is flowing away toward the ", "",
+                   "A gentle river is flowing away toward the ",
                    "You stand at the shoreline of a small lake.")
     grove = compass(6, 14, 60,
-                    "An old grove of redwood stands tall to the ", "",
+                    "An old grove of redwood stands tall to the ",
                     "The wood from these trees would make a strong fire.")
     # caves = compass(2, 4, 137,
     #                 "")
@@ -421,46 +424,54 @@ def explore1():
     explore2(playing, village, lake)
 
 
-def compass(mini, maxi, freq, far_message1, far_message2, near_message):
+def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
+    """
+    Outputs messages detailing what locations of interest (LoI) the player can see from their position on the map. 
+    :param visible_near: radius within which we are near and can interact with LoI
+    :param visible_far: radius within which we can see LoI
+    :param freq_on_map: how many steps between centers of LoI's
+    :param far_message: 
+    :param near_message: 
+    :return: 
+    """
     within_range = False
     direction = ''
-    xabs = abs(hero.xpos)
+    xabs = abs(hero.xpos)  # within x steps of nearest LoI
     yabs = abs(hero.ypos)
     # considers either side of an axis to be the same... (10, -3 == 10, 3)
     xcount = 0
     ycount = 0
-    while xabs > freq:
-        xabs -= freq
+    while xabs > freq_on_map:
+        xabs -= freq_on_map
         xcount += 1
-    while yabs > freq:
-        yabs -= freq
+    while yabs > freq_on_map:
+        yabs -= freq_on_map
         ycount += 1
-    xnearest_event = xcount * freq
-    ynearest_event = ycount * freq
+    xnearest_event = xcount * freq_on_map  # abs of LoI xpos
+    ynearest_event = ycount * freq_on_map
 
-    if xabs > freq / 2:
-        xnearest_event += freq
+    if xabs > freq_on_map / 2:
+        xnearest_event += freq_on_map
     if hero.xpos < 0:
         xnearest_event = -xnearest_event
-    if yabs > freq / 2:
-        ynearest_event += freq
+    if yabs > freq_on_map / 2:
+        ynearest_event += freq_on_map
     if hero.ypos < 0:
         ynearest_event = -ynearest_event
-    xrem = xabs % freq
-    yrem = yabs % freq
+    xrem = xabs % freq_on_map
+    yrem = yabs % freq_on_map
 
-    if freq / 2 < xabs < freq:
-        xrem = freq - (xabs % freq)
-    if freq/2 < yabs < freq:
-        yrem = freq - (yabs % freq)
+    if freq_on_map / 2 < xabs < freq_on_map:
+        xrem = freq_on_map - (xabs % freq_on_map)
+    if freq_on_map / 2 < yabs < freq_on_map:
+        yrem = freq_on_map - (yabs % freq_on_map)
     ratio = 0
-    distance = math.sqrt(xrem ** 2 + yrem ** 2)
+    distance = math.sqrt(xrem ** 2 + yrem ** 2)  # absolute distance from LoI
 
     if xrem != 0:
         ratio = abs(yrem / xrem)
 
-    # if you are within range from any direction;
-    if mini < distance <= maxi:
+    if visible_near < distance <= visible_far:  # if LoI is visible;
         if xrem == 0 or ratio > 2.414:
             if hero.ypos > ynearest_event:
                 direction = 'south.'
@@ -471,17 +482,17 @@ def compass(mini, maxi, freq, far_message1, far_message2, near_message):
                 direction = 'west.'
             elif hero.xpos < xnearest_event:
                 direction = 'east.'
-        elif 0.414 < ratio < 2.414:
+        elif 0.414 < ratio < 2.414:  # if diagonal from LoI;
             if hero.xpos > xnearest_event and hero.ypos > ynearest_event:
                 direction = 'south-west.'
             elif hero.xpos > xnearest_event and hero.ypos < ynearest_event:
                 direction = 'north-west.'
-            elif hero.xpos < xnearest_event and hero.ypos < ynearest_event:
-                direction = 'north-east.'
             elif hero.xpos < xnearest_event and hero.ypos > ynearest_event:
                 direction = 'south-east.'
-        print(far_message1, direction, far_message2, sep='')
-    elif distance <= mini:
+            elif hero.xpos < xnearest_event and hero.ypos < ynearest_event:
+                direction = 'north-east.'
+        print(far_message, direction, sep='')
+    elif distance <= visible_near:
         print(near_message, sep='')
         within_range = True
     return within_range
@@ -521,7 +532,7 @@ def explore2(playing, village, lake):
         elif playing[0] == 'h':
             for _ in playing:
                 x = ''
-                if hero.stats['current_mp'] > 3:
+                if hero.stats['current_mp'] >= 3:
                     Heal(x, hero, "hero's turn")
         elif playing == 't':
             encounter(kraken, hero)
@@ -529,7 +540,9 @@ def explore2(playing, village, lake):
             chest()
         elif playing == 'stats':
             for k, v in hero.stats.items():
-                print("{:16}{}{:>6}".format(k, ": ", int(v)))
+                print(f"{k:16}{': '}{int(v):>6}")
+        elif playing == 'dist':
+            print(hero.dist)
         else:
             explore1()
         # playing = input("[Enter] Continue  |  [O] Options  |  " + hero.view_location() + "\n")
@@ -541,26 +554,26 @@ def options(context):
     if context == "from explore2":
         print('Options: ',
               '\n', '-' * 45,
-              '\n', '{:^15}{:^15}{:^15}'.format('[S]', '[I]', '[E]'),
-              '\n', '{:^15}{:^15}{:^15}'.format('Character Sheet', 'Inventory', 'Equipment'),
-              '\n', '{:^15}{:^15}{:^15}'.format('[A]', '[C]', '[H]'),
-              '\n', '{:^15}{:^15}{:^15}'.format('Abilities', 'Consumables', ' Heal'),
+              '\n', f"{'[S]':^15}{'[I]':^15}{'[E]':^15}",
+              '\n', f"{'Character Sheet':^15}{'Inventory':^15}{'Equipment':^15}",
+              '\n', f"{'[A]':^15}{'[C]':^15}{'[H]':^15}",
+              '\n', f"{'Abilities':^15}{'Consumables':^15}{'Heal':^15}",
               '\n', '-' * 45,
               sep='')
     elif context == "from combat":
         print('Options: ',
               '\n', '-' * 60,
-              '\n', '{:^15}{:^15}{:^15}{:^15}'.format('[C]', '[I]', '[W]', '[R]'),
-              '\n', '{:^15}{:^15}{:^15}{:^15}'.format('Consumables', 'Inventory', 'Wait', 'Run Away'),
+              '\n', f"{'[C]':^15}{'[I]':^15}{'[W]':^15}{'[R]':^15}",
+              '\n', f"{'Consumables':^15}{'Inventory':^15}{'Wait':^15}{'Run Away':^15}",
               '\n', '-' * 60,
               sep='')
     elif context == "village":
         print('Options: ',
               '\n', '-' * 45,
-              '\n', '{:^15}{:^15}{:^15}'.format('[W]', '[A]', '[P]'),
-              '\n', '{:^15}{:^15}{:^15}'.format('Weaponsmith', 'Armorsmith', 'Apothecary'),
-              '\n', '{:^15}{:^15}{:^15}'.format('[T]', '[I]', '[L]'),
-              '\n', '{:^15}{:^15}{:^15}'.format('Tavern', 'Inn', 'Leave'),
+              '\n', f"{'[W]':^15}{'[A]':^15}{'[P]':^15}",
+              '\n', f"{'Weaponsmith':^15}{'Armorsmith':^15}{'Apothecary':^15}",
+              '\n', f"{'[T]':^15}{'[I]':^15}{'[L]':^15}",
+              '\n', f"{'Tavern':^15}{'Inn':^15}{'Leave':^15}",
               '\n', '-' * 45,
               sep='')
         in_village()
@@ -582,6 +595,8 @@ def move():  # should this be a class method?
             if new_dist <= hero.can_move:
                 hero.xpos = int(new_x)
                 hero.ypos = int(new_y)
+                hero.dist = math.sqrt(hero.xpos ** 2 + hero.ypos ** 2)
+                print(hero.dist)
                 event_roll()
             else:
                 print("You can't travel that quickly yet.")
@@ -590,11 +605,9 @@ def move():  # should this be a class method?
         else:
             print("Invalid coordinates.")
             explore1()
-    elif choice.isalpha():
+    elif choice in ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']:
         side_of_tri = math.floor(math.sqrt((hero.can_move ** 2) / 2))
         choice = choice.lower()
-        hero.xpos = int(hero.xpos)
-        hero.ypos = int(hero.ypos)
         if choice == 'n':
             hero.ypos += hero.can_move
         elif choice == 'ne':
@@ -618,6 +631,9 @@ def move():  # should this be a class method?
         else:
             print("Invalid direction.")
             explore1()
+        test = math.sqrt(hero.xpos ** 2 + hero.ypos ** 2)
+        print(test)
+        hero.dist = test
         event_roll()
     else:
         explore1()
