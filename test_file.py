@@ -173,25 +173,24 @@ def fishing():
 
 
 def encounter(mob, hero):
-    mob.equip()
-    print("You encounter a ", mob.stats['race'], "!", sep='')
     # Initiates first turn of combat and the encounter's loop.
+    print("You encounter a ", mob.stats['race'], "!", sep='')
+    mob.equip()
     combat_template(mob, hero)
     turn_start(mob, hero)
 
 
 def turn_start(mob, hero):
-    while mob.stats['current_hp'] > 0 and hero.stats['current_hp'] > 0:
+    while mob.stats['hp_current'] > 0 and hero.stats['hp_current'] > 0:
         hero.load_ability_bar_display("from combat")
         turn_choice = input().lower()  # bc could be [O] for options
-        # turn_choice = turn_choice.lower()  # bc could be [O] for options
         if turn_choice in ['1', '2', '3', '4', '5', '6']:
             if hero_turn(mob, hero, turn_choice) == 'dead':
                 print("You step carefully over the corpse.")
                 break
         if turn_choice == 't':
             print("You punish your foe.")
-            mob.stats['current_hp'] = 0
+            mob.stats['hp_current'] = 0
             # Runs mob death and checks for hero level up.
             mob.death(hero)
             explore1()
@@ -202,11 +201,11 @@ def turn_start(mob, hero):
             hero.consumables()
         elif turn_choice == 'i':
             hero.view_inventory()
+        elif turn_choice == 'a':
+            hero.view_abilities()
+            combat_template(mob, hero)
         elif turn_choice == 'w':
             mob_turn(mob, hero)
-        # elif turn_choice == 'a' or turn_choice == 's' or turn_choice == 'h':
-        #     if hero_turn(mob, hero, turn_choice) == 'dead':
-        #         print("You step carefully over the corpse.")
         elif turn_choice == 'r':
             roll = random.randint(1, 100)
             if roll > 50:
@@ -220,20 +219,18 @@ def turn_start(mob, hero):
                 mob_turn(mob, hero)
         elif turn_choice == 'xp':
             print("xp worth: ", mob.stats['xp_worth'])
-    if hero.stats['current_hp'] <= 0:
+    if hero.stats['hp_current'] <= 0:
         hero.death()
-    # mob.stats['current_hp'] = mob.stats['base_hp']
-    mob.reset()
     mob.inventory = []
-    hero.stats['current_mp'] += 1
+    hero.stats['mp_current'] += 1
     explore1()
 
 
 def combat_template(mob, hero):
     """Draws the combat 'window' """
     bar_len = 20
-    mob_hp_bar = int((1 - ((mob.stats['base_hp'] - mob.stats['current_hp']) / mob.stats['base_hp'])) * bar_len)
-    hero_hp_bar = min(int((1 - ((hero.stats['base_hp'] - hero.stats['current_hp']) / hero.stats['base_hp'])) * bar_len),
+    mob_hp_bar = int((1 - ((mob.stats['hp_base'] - mob.stats['hp_current']) / mob.stats['hp_base'])) * bar_len)
+    hero_hp_bar = min(int((1 - ((hero.stats['hp_base'] - hero.stats['hp_current']) / hero.stats['hp_base'])) * bar_len),
                       bar_len)
     # FORMAT: COMBAT INTERFACE
     mp_regen_fmt = ''
@@ -249,11 +246,11 @@ def combat_template(mob, hero):
     print('-' * 60,
           f"\n{mob.stats['race']:^22}{'':16}{hero.stats['race']:^22}",
           f"\n{'['}{'+' * mob_hp_bar:20}{']'}{'Health':^16}{'['}{'+' * hero_hp_bar:20}{']'}",
-          f"\n{mp_regen_fmt:>10}{mob.stats['current_mp']:>11}{'Mana':^16}{hero.stats['current_mp']:<20}",
-          f"\n{melee_boost_fmt:>10}{mob.stats['base_melee_atk']:>11}{'Attack':^16}"
-          f"{(hero.stats['base_melee_atk'] + hero.stats['melee_boost']):<20}",
-          f"\n{magic_boost_fmt:>10}{mob.stats['current_mp']:>11}{'M. Attack':^16}"
-          f"{(hero.stats['base_magic_atk'] + hero.stats['magic_boost']):<20}",
+          f"\n{mp_regen_fmt:>10}{mob.stats['mp_current']:>11}{'Mana':^16}{hero.stats['mp_current']:<20}",
+          f"\n{melee_boost_fmt:>10}{mob.stats['melee_base_atk']:>11}{'Attack':^16}"
+          f"{(hero.stats['melee_base_atk'] + hero.stats['melee_boost']):<20}",
+          f"\n{magic_boost_fmt:>10}{mob.stats['mp_current']:>11}{'M. Attack':^16}"
+          f"{(hero.stats['magic_base_atk'] + hero.stats['magic_boost']):<20}",
           '\n', '-' * 60,
           sep='')
 
@@ -276,49 +273,66 @@ def mob_turn(mob, hero):
     :return: 'dead' flag if mob has been killed to signal end of combat.
     """
     context = "mob's turn"
-    mob.stats['current_mp'] += 1
 
-    if mob.stats['current_hp'] > 0:
+    if mob.stats['hp_current'] > 0:
         time.sleep(0.3)
         hero.regen('combat')
         mob.regen()
 
-        if mob.stats['current_mp'] >= 3 and (mob.stats['current_hp'] / mob.stats['base_hp']) < 0.2 \
+        # decide if should heal
+        if mob.stats['mp_current'] >= 3 and (mob.stats['hp_current'] / mob.stats['hp_base']) < 0.2 \
                 and "Heal" in mob.abilities:
-            desire_to_heal = 1 - (mob.stats['current_hp'] / mob.stats['base_hp'])
+            desire_to_heal = 1 - (mob.stats['hp_current'] / mob.stats['hp_base'])
             odds_to_heal = random.uniform(desire_to_heal, 1)
             rngesus = random.uniform(0, 1)
-
             if odds_to_heal >= rngesus:
                 mob.abilities['Heal'](mob, hero, context)
-        choices = ['basic", "ability']
-        rngesus = random.choice(choices)
 
-        if rngesus == "ability":
-            choices = ['magic", "melee']
-            rngesus = random.choice(choices)
-
-            if rngesus == "magic":
-                if mob.stats['current_mp'] >= 18 and "Firaga" in mob.abilities:
-                    mob.abilities['Firaga'](mob, hero, context)
-                elif mob.stats['current_mp'] >= 12 and "Fira" in mob.abilities:
-                    mob.abilities['Fira'](mob, hero, context)
-                elif mob.stats['current_mp'] >= 6 and "Fire" in mob.abilities:
-                    mob.abilities['Fire'](mob, hero, context)
-                else:
-                    mob_basic_atk(mob, hero)
+        rngesus = random.uniform(0, 1)
+        if rngesus < mob.stats['melee_affinity']:
+            if "Rush" in mob.abilities and mob.stats['melee_affinity'] > random.uniform(0, 1):
+                mob.abilities['Rush'](hero, mob, context)
+            elif "Strike" in mob.abilities:
+                mob.abilities['Strike'](hero, mob, context)
             else:
-                rngesus = random.randint(1, 10)
-                if rngesus < 5:
-                    if "Rush" in mob.abilities:
-                        mob.abilities['Rush'](hero, mob, context)
-                    else:
-                        mob_basic_atk(mob, hero)
-                else:
-                    if "Strike" in mob.abilities:
-                        mob.abilities['Strike'](hero, mob, context)
-                    else:
-                        mob_basic_atk(mob, hero)
+                mob_basic_atk(mob, hero)
+        elif rngesus < mob.stats['melee_affinity'] + mob.stats['magic_affinity']:
+            if mob.stats['mp_current'] >= 18 and "Firaga" in mob.abilities:
+                mob.abilities['Firaga'](mob, hero, context)
+            elif mob.stats['mp_current'] >= 12 and "Fira" in mob.abilities:
+                mob.abilities['Fira'](mob, hero, context)
+            elif mob.stats['mp_current'] >= 6 and "Fire" in mob.abilities:
+                mob.abilities['Fire'](mob, hero, context)
+            else:
+                mob_basic_atk(mob, hero)
+
+        # choices = ['basic', 'ability']
+        # rngesus = random.choice(choices)
+        # if rngesus == "ability":
+        #     choices = ['magic', 'melee']
+        #     rngesus = random.choice(choices)
+
+            # if rngesus == "magic":
+            #     if mob.stats['mp_current'] >= 18 and "Firaga" in mob.abilities:
+            #         mob.abilities['Firaga'](mob, hero, context)
+            #     elif mob.stats['mp_current'] >= 12 and "Fira" in mob.abilities:
+            #         mob.abilities['Fira'](mob, hero, context)
+            #     elif mob.stats['mp_current'] >= 6 and "Fire" in mob.abilities:
+            #         mob.abilities['Fire'](mob, hero, context)
+            #     else:
+            #         mob_basic_atk(mob, hero)
+            # # else:
+            #     rngesus = random.randint(1, 10)
+            #     if rngesus < 5:
+            #         if "Rush" in mob.abilities:
+            #             mob.abilities['Rush'](hero, mob, context)
+            #         else:
+            #             mob_basic_atk(mob, hero)
+            #     else:
+            #         if "Strike" in mob.abilities:
+            #             mob.abilities['Strike'](hero, mob, context)
+            #         else:
+            #             mob_basic_atk(mob, hero)
         else:
             mob_basic_atk(mob, hero)
         combat_template(mob, hero)
@@ -329,8 +343,8 @@ def mob_turn(mob, hero):
 
 
 def mob_basic_atk(mob, target):
-    strike = math.floor((mob.stats['base_melee_atk'] + mob.stats['melee_boost']) * random.uniform(0.7, 1.1))
-    target.stats['current_hp'] = math.floor(max(target.stats['current_hp'] - strike, 0))
+    strike = math.floor((mob.stats['melee_base_atk'] + mob.stats['melee_boost']) * random.uniform(0.7, 1.1))
+    target.stats['hp_current'] = math.floor(max(target.stats['hp_current'] - strike, 0))
     print("You are hit for ", strike, " points.", sep='')
 
 
@@ -538,7 +552,7 @@ def explore2(playing, village, lake):
         elif playing[0] == 'h':
             for _ in playing:
                 x = ''
-                if hero.stats['current_mp'] >= 3:
+                if hero.stats['mp_current'] >= 3:
                     Heal(x, hero, "hero's turn")
         elif playing == 't':
             encounter(kraken, hero)

@@ -45,11 +45,11 @@ class Char:
             levels_gained += 1
             self.stats['level'] += 1
 
-        self.stats['current_hp'] += self.stats['base_hp'] * 0.05 * levels_gained
-        self.stats['base_hp'] += (42 * 1.05) * levels_gained
-        self.stats['base_melee_atk'] += 4 * levels_gained
-        self.stats['base_mp'] += 6 * levels_gained
-        self.stats['base_magic_atk'] += 3 * levels_gained
+        self.stats['hp_current'] += self.stats['hp_base'] * 0.05 * levels_gained
+        self.stats['hp_base'] += (42 * 1.05) * levels_gained
+        self.stats['melee_base_atk'] += 4 * levels_gained
+        self.stats['mp_base'] += 6 * levels_gained
+        self.stats['magic_base_atk'] += 3 * levels_gained
         self.can_move += 1  # may need to adjust this number. Currently linear.
 
         # FORMAT: LEVEL-UP NOTIFICATION
@@ -59,11 +59,11 @@ class Char:
               '\n', '-' * 25,
               '\n', f"{'Level: ':8}{self.stats['level']}",
               '\n', f"{'Health: ':8}",
-              f"{str(math.floor(self.stats['current_hp']))}/{str(math.floor(self.stats['base_hp']))}",
+              f"{str(math.floor(self.stats['hp_current']))}/{str(math.floor(self.stats['hp_base']))}",
               '\n', f"{'Mana: ':8}",
-              f"{str(math.floor(self.stats['current_mp']))}/{str(math.floor(self.stats['base_mp']))}",
-              '\n', f"{'Attack: ':8}{self.stats['base_melee_atk']}",
-              '\n', f"{'M. Attack: ':8}{self.stats['base_magic_atk']}", sep='')
+              f"{str(math.floor(self.stats['mp_current']))}/{str(math.floor(self.stats['mp_base']))}",
+              '\n', f"{'Attack: ':8}{self.stats['melee_base_atk']}",
+              '\n', f"{'M. Attack: ':8}{self.stats['magic_base_atk']}", sep='')
 
     def view_inventory(self):
         gold_padding = ' ' * (60 - 10 - 7 - len(self.name) - len(str(gold.quantity)))
@@ -78,9 +78,9 @@ class Char:
 
     def character_sheet(self):
         # FORMAT: CHARACTER SHEET
-        xp_fmt = int((1 - ((self.stats['next_level_at'] - self.stats['xp']) /
+        xp_bar_fill = int((1 - ((self.stats['next_level_at'] - self.stats['xp']) /
                            (self.stats['next_level_at'] - self.stats['prev_level_xp']))) * 35)
-        print(xp_fmt)
+        # print(f"var xp_bar_fill: {xp_bar_fill}")
         padding = ' ' * (60 - len(str(self.stats['race'] + ' (Level ' + str(self.stats['level']) + ')')) - 2 - 35)
         hp_regen_fmt = ''
         mp_regen_fmt = ''
@@ -95,22 +95,23 @@ class Char:
         if self.stats['magic_boost'] != 0:
             magic_boost_fmt = f"{' ( +'}{str(int(self.stats['magic_boost']))}{')'}"
         gold_padding = ' ' * (60 - 16 - 10 - len(str(gold.quantity)))
+        
         print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{gold.quantity:>}",
               '\n',
               '----+' * 12,
               '\n',
-              f"{str(self.stats['race'])}{' (Level '}{str(self.stats['level'])}{')':^10}{padding}{'['}{'=' * xp_fmt:35}"
+              f"{str(self.stats['race'])}{' (Level '}{str(self.stats['level'])}{')'}{padding}{'['}{'='* xp_bar_fill:35}"
               f"{']'}",
               '\n',
               f"{'Health: ':>15}{'   '}", "{:>14}{:<}".format(
-                str(int(self.stats['current_hp'])) + '/' + str(int(self.stats['base_hp'])), hp_regen_fmt),
+                str(int(self.stats['hp_current'])) + '/' + str(int(self.stats['hp_base'])), hp_regen_fmt),
               '\n',
               f"{'Mana: ':>15}{'   '}", "{:>14}{:<}".format(
-                str(self.stats['current_mp']) + '/' + str(self.stats['base_mp']), mp_regen_fmt),
+                str(self.stats['mp_current']) + '/' + str(self.stats['mp_base']), mp_regen_fmt),
               '\n',
-              f"{'Attack: ':>15}{'   '}{self.stats['base_melee_atk']:>14}{melee_boost_fmt:<}",
+              f"{'Attack: ':>15}{'   '}{self.stats['melee_base_atk']:>14}{melee_boost_fmt:<}",
               '\n',
-              f"{'M. Attack: ':>15}{'   '}{self.stats['base_magic_atk']:>14}{magic_boost_fmt:<}",
+              f"{'M. Attack: ':>15}{'   '}{self.stats['magic_base_atk']:>14}{magic_boost_fmt:<}",
               '\n',
               '-' * 60, sep='')
         self.menu_gear_equipped('while viewing character sheet')
@@ -241,6 +242,8 @@ class Char:
         """
         print("Learned Abilities:")
         print('-' * 30,
+              '\n', ' Hotkey',
+              '\n', '-' * 8,
               sep='')
         for k, v in self.abilities.items():  # k-str (hotkey)  v-function name
             hotkey_fmt = '[' + k + ']'
@@ -269,22 +272,22 @@ class Char:
             option1 = ''
             option2 = ''
         else:
-            option1 = '         Option'
-            option2 = '        [O]'
+            option1 = '   Option'
+            option2 = '[O]'
         cell = '}-{'
         abil_bar_disp = {'1': '     ', '2': '     ', '3': '     ', '4': '     ', '5': '     ', '6': '     '}
         for k, v in self.ability_bar.items():  # k-str ('1')           v-function ( Strike() )
             for a, b in self.abilities.items():  # a-str ( short_name )  b-function ( Strike() )
                 if self.abilities[a] == v:
                     abil_bar_disp[k] = a
-        print("   1       2       3       4       5       6", option1,
+        print("    1        2        3        4        5        6", option1,
               '\n',
-              f"{'{'}{abil_bar_disp['1']:^5}{cell}"
-              f"{abil_bar_disp['2']:^5}{cell}"
-              f"{abil_bar_disp['3']:^5}{cell}"
-              f"{abil_bar_disp['4']:^5}{cell}"
-              f"{abil_bar_disp['5']:^5}{cell}"
-              f"{abil_bar_disp['6']:^5}{'}'}{option2}")
+              f"{'{'}{abil_bar_disp['1']:^6}{cell}"
+              f"{abil_bar_disp['2']:^6}{cell}"
+              f"{abil_bar_disp['3']:^6}{cell}"
+              f"{abil_bar_disp['4']:^6}{cell}"
+              f"{abil_bar_disp['5']:^6}{cell}"
+              f"{abil_bar_disp['6']:^6}{'}'}{option2:>6}")
 
     def consumables(self):
         consumables_list = []
@@ -313,13 +316,13 @@ class Char:
                     for _ in choice:
                         if i[0] in self.inventory:
                             print("You drink the ", i[0].name, ".", sep='')
-                            self.stats['current_hp'] = self.stats['current_hp'] + i[0].hp_regen
-                            self.stats['current_mp'] = self.stats['current_mp'] + i[0].mp_regen
+                            self.stats['hp_current'] = self.stats['hp_current'] + i[0].hp_regen
+                            self.stats['mp_current'] = self.stats['mp_current'] + i[0].mp_regen
                             # self.stats[ = self.stats[
                             # self.stats[ = self.stats[
                             # self.stats[ = self.stats[
                             if i[0].hp_regen:
-                                print("You now have", math.floor(self.stats['current_hp']), "hp.")
+                                print("You now have", math.floor(self.stats['hp_current']), "hp.")
                             if i[0].mp_regen:
                                 print("You gain", i[0].mp_regen, "mp.")
                             i[0].quantity -= 1
@@ -405,12 +408,12 @@ class Char:
             increment = 3
         elif context == 'combat':
             increment = 1
-        if self.stats['current_mp'] < self.stats['base_mp']:
-            self.stats['current_mp'] = \
-                min(self.stats['current_mp'] + increment + self.stats['mp_regen'], self.stats['base_mp'])
-        if self.stats['current_hp'] < self.stats['base_hp']:
-            self.stats['current_hp'] = \
-                min(self.stats['current_hp'] + self.stats['hp_regen'], self.stats['base_hp'])
+        if self.stats['mp_current'] < self.stats['mp_base']:
+            self.stats['mp_current'] = \
+                min(self.stats['mp_current'] + increment + self.stats['mp_regen'], self.stats['mp_base'])
+        if self.stats['hp_current'] < self.stats['hp_base']:
+            self.stats['hp_current'] = \
+                min(self.stats['hp_current'] + self.stats['hp_regen'], self.stats['hp_base'])
 
     def view_location(self):
 
@@ -426,13 +429,13 @@ class Char:
         self.inventory = []
         self.stats['level'] = 1
         self.stats['xp'] = 0
-        self.stats['current_hp'] = 200
-        self.stats['base_hp'] = 200
+        self.stats['hp_current'] = 200
+        self.stats['hp_base'] = 200
         self.stats['hp_regen'] = 0
-        self.stats['current_mp'] = 10
-        self.stats['base_mp'] = 10
-        self.stats['base_melee_atk'] = 14
-        self.stats['base_magic_atk'] = 25
+        self.stats['mp_current'] = 10
+        self.stats['mp_base'] = 10
+        self.stats['melee_base_atk'] = 14
+        self.stats['magic_base_atk'] = 25
         self.stats['mp_regen'] = 0
         self.stats['melee_boost'] = 0
         self.stats['magic_boost'] = 0
@@ -472,20 +475,20 @@ class Mob:
         self.stats['hp_regen'] += equipping_obj.hp_regen
         self.stats['mp_regen'] += equipping_obj.mp_regen
 
-    def reset(self):
-        # self.stats['melee_boost'] = self.init_melee_boost
-        # self.stats['magic_boost'] = self.init_magic_boost
-        # self.stats['hp_regen'] = self.init_hp_regen
-        # self.stats['mp_regen'] = self.init_mp_regen
-
-        self.stats = self.init_stats
+    # def reset(self):
+    #     # self.stats['melee_boost'] = self.init_melee_boost
+    #     # self.stats['magic_boost'] = self.init_magic_boost
+    #     # self.stats['hp_regen'] = self.init_hp_regen
+    #     # self.stats['mp_regen'] = self.init_mp_regen
+    #
+    #     self.stats = self.init_stats
 
     def regen(self):
-        if self.stats['current_mp'] < self.stats['base_mp']:
-            self.stats['current_mp'] = min(self.stats['current_mp'] + self.stats['mp_regen'], self.stats['base_mp'])
+        if self.stats['mp_current'] < self.stats['mp_base']:
+            self.stats['mp_current'] = min(self.stats['mp_current'] + self.stats['mp_regen'], self.stats['mp_base'])
 
-        if self.stats['current_hp'] < self.stats['base_hp']:
-            self.stats['current_hp'] = min(self.stats['current_hp'] + self.stats['hp_regen'], self.stats['base_hp'])
+        if self.stats['hp_current'] < self.stats['hp_base']:
+            self.stats['hp_current'] = min(self.stats['hp_current'] + self.stats['hp_regen'], self.stats['hp_base'])
 
 
     def plunder(self, hero):
@@ -650,15 +653,15 @@ worn_hatchet = Tool("worn hatchet", 1, 4, 20)
 
 def player():
     return Char({"race": "human",
-                          "current_hp": 200,
-                          "base_hp": 200,
+                          "hp_current": 200,
+                          "hp_base": 200,
                           "hp_regen": 0,
-                          "current_mp": 10,
-                          "base_mp": 10,
+                          "mp_current": 10,
+                          "mp_base": 10,
                           "mp_regen": 0,
-                          "base_melee_atk": 14,
+                          "melee_base_atk": 14,
                           "melee_boost": 0,
-                          "base_magic_atk": 25,
+                          "magic_base_atk": 25,
                           "magic_boost": 0,
                           "level": 1,
                           "xp": 0,
@@ -677,16 +680,18 @@ def player():
 
 def thief():
     return Mob({"race": "thief",
-                "current_hp": 200,
-                "base_hp": 200,
+                "hp_current": 200,
+                "hp_base": 200,
                 "hp_regen": 0,
-                "current_mp": 10,
-                "base_mp": 10,
+                "mp_current": 10,
+                "mp_base": 10,
                 "mp_regen": 0,
-                "base_melee_atk": 14,
+                "melee_base_atk": 14,
                 "melee_boost": 0,
-                "base_magic_atk": 8,
+                "melee_affinity": 0.7,
+                "magic_base_atk": 8,
                 "magic_boost": 0,
+                "magic_affinity": 0.2,
                 "level": 1,
                 "xp_worth": 12},
                [[list_of_common_items], [list_of_bait]],
@@ -695,16 +700,18 @@ def thief():
 
 def kaelas_boar():
     return Mob({"race": "Kaelas boar",
-                "current_hp": 60,
-                "base_hp": 60,
+                "hp_current": 60,
+                "hp_base": 60,
                 "hp_regen": 0,
-                "current_mp": 4,
-                "base_mp": 4,
+                "mp_current": 4,
+                "mp_base": 4,
                 "mp_regen": 0,
-                "base_melee_atk": 24,
+                "melee_base_atk": 24,
                 "melee_boost": 0,
-                "base_magic_atk": 4,
+                "melee_affinity": 0.7,
+                "magic_base_atk": 4,
                 "magic_boost": 0,
+                "magic_affinity": 0.2,
                 "level": 1,
                 "xp_worth": 8},
                [list_of_common_items],
@@ -713,16 +720,18 @@ def kaelas_boar():
 
 def wolves():
     return Mob({"race": "pack of wolves",
-                "current_hp": 300,
-                "base_hp": 300,
+                "hp_current": 300,
+                "hp_base": 300,
                 "hp_regen": 0,
-                "current_mp": 10,
-                "base_mp": 10,
+                "mp_current": 10,
+                "mp_base": 10,
                 "mp_regen": 0,
-                "base_melee_atk": 7,
+                "melee_base_atk": 7,
                 "melee_boost": 0,
-                "base_magic_atk": 0,
+                "melee_affinity": 0.7,
+                "magic_base_atk": 0,
                 "magic_boost": 0,
+                "magic_affinity": 0.2,
                 "level": 1,
                 "xp_worth": 14},
                [list_of_common_items],
@@ -731,16 +740,18 @@ def wolves():
 
 def cultist():
     return Mob({"race": "cultist",
-                "current_hp": 200,
-                "base_hp": 200,
+                "hp_current": 200,
+                "hp_base": 200,
                 "hp_regen": 10,
-                "current_mp": 100,
-                "base_mp": 100,
+                "mp_current": 100,
+                "mp_base": 100,
                 "mp_regen": 4,
-                "base_melee_atk": 8,
+                "melee_base_atk": 8,
                 "melee_boost": 0,
-                "base_magic_atk": 38,
+                "melee_affinity": 0.7,
+                "magic_base_atk": 38,
                 "magic_boost": 0,
+                "magic_affinity": 0.2,
                 "level": 1,
                 "xp_worth": 46},
                [[list_of_common_items], [list_of_bait]],
@@ -752,16 +763,18 @@ list_of_mobs = [thief, kaelas_boar, wolves, cultist]
 
 def giant_kitty():
     return Mob({"race": "giant....kitty?",
-                "current_hp": 3000,
-                "base_hp": 3000,
+                "hp_current": 3000,
+                "hp_base": 3000,
                 "hp_regen": 0,
-                "current_mp": 10,
-                "base_mp": 10,
+                "mp_current": 10,
+                "mp_base": 10,
                 "mp_regen": 0,
-                "base_melee_atk": 75,
+                "melee_base_atk": 75,
                 "melee_boost": 0,
-                "base_magic_atk": 85,
+                "melee_affinity": 0.7,
+                "magic_base_atk": 85,
                 "magic_boost": 0,
+                "magic_affinity": 0.2,
                 "level": 1,
                 "xp_worth": 666},
                [list_of_common_items],
@@ -770,16 +783,18 @@ def giant_kitty():
 
 def kraken():
     return Mob({"race": "Kraken",
-                "current_hp": 5000,
-                "base_hp": 5000,
+                "hp_current": 5000,
+                "hp_base": 5000,
                 "hp_regen": 0,
-                "current_mp": 10,
-                "base_mp": 10,
+                "mp_current": 10,
+                "mp_base": 10,
                 "mp_regen": 0,
-                "base_melee_atk": 72,
+                "melee_base_atk": 72,
                 "melee_boost": 0,
-                "base_magic_atk": 68,
+                "melee_affinity": 0.7,
+                "magic_base_atk": 68,
                 "magic_boost": 0,
+                "magic_affinity": 0.2,
                 "level": 1,
                 "xp_worth": 1247},
                [list_of_common_items],
