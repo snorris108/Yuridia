@@ -1,10 +1,8 @@
 
-# from Yuridia_OneDrive_project.classes import *
-from classes_dict_stats_test import *
+from classes import *
 import time
 import pickle
 import os
-import random
 
 # DONE add Consumables interface, the potions equivalent of Equipment.
 # add new spells that unlock a certain levels.
@@ -14,7 +12,7 @@ import random
 # limit player's gear inventory, forcing the player to destroy a gear piece of their choice before getting more loot.
 # you learn abilities by having them used on you in combat, and maybe taught in towns.
 # incorporate durability on weapons and armor, figure out how to handle items with diff durability states
-#     possibly only 3 tiers of degredation, to minimize amount of gear versions needed
+#     possibly only 3 tiers of degradation, to minimize amount of gear versions needed
 
 
 def enter_village():
@@ -220,7 +218,10 @@ def turn_start(mob, hero):
         elif turn_choice == 'xp':
             print("xp worth: ", mob.stats['xp_worth'])
     if hero.stats['hp_current'] <= 0:
-        hero.death()
+        print("You've been put to rest.")
+        print("Final stats:")
+        hero.character_sheet()
+        intro()
     mob.inventory = []
     hero.stats['mp_current'] += 1
     explore1()
@@ -249,7 +250,7 @@ def combat_template(mob, hero):
           f"\n{mp_regen_fmt:>10}{mob.stats['mp_current']:>11}{'Mana':^16}{hero.stats['mp_current']:<20}",
           f"\n{melee_boost_fmt:>10}{mob.stats['melee_base_atk']:>11}{'Attack':^16}"
           f"{(hero.stats['melee_base_atk'] + hero.stats['melee_boost']):<20}",
-          f"\n{magic_boost_fmt:>10}{mob.stats['mp_current']:>11}{'M. Attack':^16}"
+          f"\n{magic_boost_fmt:>10}{mob.stats['magic_base_atk']:>11}{'M. Attack':^16}"
           f"{(hero.stats['magic_base_atk'] + hero.stats['magic_boost']):<20}",
           '\n', '-' * 60,
           sep='')
@@ -408,6 +409,10 @@ def intro():
                 "Around you, the cave is still and damp. A sharp edge of light cuts across the floor, and as your"
                 " eyes adjust you hear the cry again, closer. A deer, possibly, finding its mortality. You gather "
                 "your gear and leave your dwelling.", sep='')
+    create_hero()
+
+
+def create_hero():
     option = input("What do they call you?\n")
     if option == '-':
         load_game()
@@ -555,7 +560,7 @@ def explore2(playing, village, lake):
                 if hero.stats['mp_current'] >= 3:
                     Heal(x, hero, "hero's turn")
         elif playing == 't':
-            encounter(kraken, hero)
+            encounter(kraken(), hero)
         elif playing == 'x':
             chest()
         elif playing == 'stats':
@@ -578,15 +583,13 @@ def options(context):
               '\n', f"{'Character Sheet':^15}{'Inventory':^15}{'Equipment':^15}",
               '\n', f"{'[A]':^15}{'[C]':^15}{'[H]':^15}",
               '\n', f"{'Abilities':^15}{'Consumables':^15}{'Heal':^15}",
-              '\n', '-' * 45,
-              sep='')
+              '\n', '-' * 45, sep='')
     elif context == "from combat":
         print('Options: ',
               '\n', '-' * 60,
               '\n', f"{'[C]':^15}{'[I]':^15}{'[W]':^15}{'[R]':^15}",
               '\n', f"{'Consumables':^15}{'Inventory':^15}{'Wait':^15}{'Run Away':^15}",
-              '\n', '-' * 60,
-              sep='')
+              '\n', '-' * 60, sep='')
     elif context == "village":
         print('Options: ',
               '\n', '-' * 45,
@@ -594,15 +597,13 @@ def options(context):
               '\n', f"{'Weaponsmith':^15}{'Armorsmith':^15}{'Apothecary':^15}",
               '\n', f"{'[T]':^15}{'[I]':^15}{'[L]':^15}",
               '\n', f"{'Tavern':^15}{'Inn':^15}{'Leave':^15}",
-              '\n', '-' * 45,
-              sep='')
+              '\n', '-' * 45, sep='')
         in_village()
 
 
 def move():  # should this be a class method?
     print("Which direction will you head?",
-          '\n', "(Enter direction or [C] to enter coordinates)",
-          sep='')
+          '\n', "(Enter direction or [C] to enter coordinates)", sep='')
     choice = input()
     choice = choice.lower()
     if choice == 'c':
@@ -693,6 +694,7 @@ def load_game():
             print("Previous progress loaded.")
     else:
         print("You have no saved progress.")
+        create_hero()
 
 
 intro()
