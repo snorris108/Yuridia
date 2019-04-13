@@ -95,9 +95,9 @@ def selling(context):
                     if i[0].quantity == 0:
                         hero.inventory.remove(i[0])
                 sold_for = i[0].value * number
-                gold.quantity += sold_for
+                hero.gold += sold_for
                 print("You sell ", number, ' ', i[0].name, " for ", sold_for, " gold.",
-                      '\n', "You now have ", gold.quantity, " gold.",
+                      '\n', "You now have ", hero.gold, " gold.",
                       sep='')
                 if list:
                     selling(context)
@@ -127,47 +127,47 @@ def weaponsmith():
     shop("weaponsmith")
 
 
-def fishing():
-    list = hero.item_selection(Bait, '')
-    if list:
-        bait = ''
-        fish = ''
-        choice = input("What bait would you like to use?\n")
-        for i in list:  # [obj, str], [...
-            if choice == str(i[1]):
-                bait = i[0]
-        fish_types = {herring: ilan_berries, salmon: thread_worms}
-        for k, v in fish_types.items():  # k-obj fish  v-obj bait
-            if bait == v:
-                fish = k
-        print("You attempt to catch a fish.")
-        time.sleep(random.randint(1, 10) * 0.5)
-        print("You get a bite!")
-        start = round(time.clock(), 4)
-        # stop = 0
-        Time = 10
-        catch = input()
-        if catch == '':
-            stop = round(time.clock(), 4)
-            Time = round((stop - start), 4)
-            # print(start, stop, (stop - start))
-        if Time < 0.6:
-            print("You caught a ", fish.name, ".  ", Time, sep='')
-            if fish not in hero.inventory:
-                hero.inventory.append(fish)
-            bait.quantity -= 1
-            if bait.quantity == 0:
-                hero.inventory.remove(bait)
-            fish.quantity += 1
-            print("You have ", bait.quantity, ' ', bait.name, " left.", sep='')
-        else:
-            print("It slips away with your bait.  ", Time)
-            bait.quantity -= 1
-            if bait.quantity == 0:
-                hero.inventory.remove(bait)
-            print(bait.quantity, ' ', bait.name)
-    else:
-        print("You have no bait.")
+# def fishing():
+#     list = hero.item_selection(Bait, '')
+#     if list:
+#         bait = ''
+#         fish = ''
+#         choice = input("What bait would you like to use?\n")
+#         for i in list:  # [obj, str], [...
+#             if choice == str(i[1]):
+#                 bait = i[0]
+#         fish_types = {herring: ilan_berries, salmon: thread_worms}
+#         for k, v in fish_types.items():  # k-obj fish  v-obj bait
+#             if bait == v:
+#                 fish = k
+#         print("You attempt to catch a fish.")
+#         time.sleep(random.randint(1, 10) * 0.5)
+#         print("You get a bite!")
+#         start = round(time.clock(), 4)
+#         # stop = 0
+#         Time = 10
+#         catch = input()
+#         if catch == '':
+#             stop = round(time.clock(), 4)
+#             Time = round((stop - start), 4)
+#             # print(start, stop, (stop - start))
+#         if Time < 0.6:
+#             print("You caught a ", fish.name, ".  ", Time, sep='')
+#             if fish not in hero.inventory:
+#                 hero.inventory.append(fish)
+#             bait.quantity -= 1
+#             if bait.quantity == 0:
+#                 hero.inventory.remove(bait)
+#             fish.quantity += 1
+#             print("You have ", bait.quantity, ' ', bait.name, " left.", sep='')
+#         else:
+#             print("It slips away with your bait.  ", Time)
+#             bait.quantity -= 1
+#             if bait.quantity == 0:
+#                 hero.inventory.remove(bait)
+#             print(bait.quantity, ' ', bait.name)
+#     else:
+#         print("You have no bait.")
 
 
 def encounter(mob, hero):
@@ -383,7 +383,7 @@ def chest_looting(item):
     """
     Generates a random number used to evaluate odds of getting item/gear from chest. See below for handling items
     individually.
-    :param item: item/gear instance object
+    :param item: function that returns instance of item/gear
     """
     if item not in hero.inventory:
         hero.inventory.append(item)
@@ -546,8 +546,8 @@ def explore2(playing, village, lake):
             move()
         elif playing == 'v' and village:
             enter_village()
-        elif playing == 'f' and lake:
-            fishing()
+        # elif playing == 'f' and lake:
+        #     fishing()
         elif playing == '':
             event_roll()
         elif playing == '=':

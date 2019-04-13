@@ -1,5 +1,6 @@
 
 from abilities import *
+from items import *
 
 class Char:
     """
@@ -25,6 +26,7 @@ class Char:
         self.can_move = can_move
         self.dist = math.floor(math.sqrt(xpos ** 2 + ypos ** 2))  # determines mob difficulty
         self.name = name
+        self.gold = 0
 
 
     def level_up(self):
@@ -61,8 +63,8 @@ class Char:
               '\n', f"{'M. Attack: ':8}{self.stats['magic_base_atk']}", sep='')
 
     def view_inventory(self):
-        gold_padding = ' ' * (60 - 10 - 7 - len(self.name) - len(str(gold.quantity)))
-        print(f"{'Inventory: '}{gold_padding}{'Gold: ':>}{gold.quantity:>}",
+        gold_padding = ' ' * (60 - 10 - 7 - len(self.name) - len(str(self.gold)))
+        print(f"{'Inventory: '}{gold_padding}{'Gold: ':>}{self.gold:>}",
               '\n', '----+' * 12, sep='')
         for i in self.inventory:
             print(f"{i.quantity:4}{'  '}{i.name:14}{i.value:>8}", sep='')
@@ -89,9 +91,9 @@ class Char:
             melee_boost_fmt = f"{' ( +'}{str(int(self.stats['melee_boost']))}{')'}"
         if self.stats['magic_boost'] != 0:
             magic_boost_fmt = f"{' ( +'}{str(int(self.stats['magic_boost']))}{')'}"
-        gold_padding = ' ' * (60 - 16 - 10 - len(str(gold.quantity)))
+        gold_padding = ' ' * (60 - 16 - 10 - len(str(self.gold)))
         
-        print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{gold.quantity:>}",
+        print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{self.gold:>}",
               '\n',
               '----+' * 12,
               '\n',
@@ -119,29 +121,30 @@ class Char:
         :param context: 'from character sheet' or 'during equip or unequip', to determine if it will display a hotkey
         :return:
         """
-        hotkey = 1
-        hotkey_fmt = ''
-        if context == 'while viewing character sheet':
-            hotkey_fmt = ''
-        elif context == 'during equip or unequip':
-            hotkey_fmt = f'[{str(hotkey)}]'
 
+        hotkey = 1
         for k, v in self.equipment.items():
+            hotkey_fmt = ''
+            if context == 'while viewing character sheet':
+                hotkey_fmt = ''
+            elif context == 'during equip or unequip':
+                hotkey_fmt = f'[{str(hotkey)}]'
+
             ohAtkPenalty = (0.7 if k == 'Offhand' else 1)
             if v:
-                melatk = math.floor(v.melee_atk * ohAtkPenalty)
+                melatk = math.floor(v.stats['melee_boost'] * ohAtkPenalty)
                 melee_atk_fmt = f'(/{str(melatk)})'
                 if melatk == 0:
                     melee_atk_fmt = ''
-                magatk = math.floor(v.magic_atk * ohAtkPenalty)
+                magatk = math.floor(v.stats['magic_boost'] * ohAtkPenalty)
                 magic_atk_fmt = f'(*{str(magatk)})'
                 if magatk == 0:
                     magic_atk_fmt = ''
-                hp_regen = int(v.hp_regen)
+                hp_regen = int(v.stats['hp_regen'])
                 hp_regen_fmt = f'(^{str(hp_regen)}^ hp)'
                 if hp_regen == 0:
                     hp_regen_fmt = ''
-                mp_regen = int(v.mp_regen)
+                mp_regen = int(v.stats['mp_regen'])
                 mp_regen_fmt = f'(^{str(mp_regen)}^ mp)'
                 if mp_regen == 0:
                     mp_regen_fmt = ''
@@ -158,24 +161,24 @@ class Char:
         gear_list = self.item_selection(Gear, "from gear")
         if gear_list:
             choice = input("What would you like to equip? ([Enter]-cancel)\n")
-            for gear_item in gear_list:
-                if choice == str(gear_item[1]):
-                    if 'Offhand' in gear_item[0].slot:
+            for index, gear_item in enumerate(gear_list):
+                if choice == str(index + 1):
+                    if 'Offhand' in gear_item.stats['slot']:
                         slot_options_dict = {"Mainhand": '1', "Offhand": '2'}
                         slot_options_choice = input("[1] - Mainhand  |  [2] - Offhand\n")
-                        for k, v in slot_options_dict.items():  # k-str slot  v-str hotkey
+                        for k, v in slot_options_dict.items():
                             if v == slot_options_choice:
                                 if self.equipment[k]:
                                     self.unequip(k, self.equipment[k])
-                                self.equipping(gear_item[0], slot_options_choice)
-                                self.equipment[k] = gear_item[0]
+                                self.equipping(gear_item, slot_options_choice)
+                                self.equipment[k] = gear_item
                     else:
-                        for k, v in self.equipment.items():  # k-str ('Body')   v-obj (tunic)
-                            if k == gear_item[0].slot:
+                        for k, v in self.equipment.items():
+                            if k == gear_item.stats['slot']:
                                 if self.equipment[k]:
                                     self.unequip(k, self.equipment[k])
-                                self.equipping(gear_item[0], gear_item[0].slot)
-                                self.equipment[k] = gear_item[0]
+                                self.equipping(gear_item, gear_item.stats['slot'])
+                                self.equipment[k] = gear_item
         else:
             print("You don't have any gear.")
 
@@ -183,7 +186,7 @@ class Char:
         print("Which slot would you like to unequip? ([Enter]-cancel)",
               '\n', '-' * 60, sep='')
         self.menu_gear_equipped('during equip or unequip')
-        slot_choice = input('')
+        slot_choice = input()
         slot_chose = ''
         pairs = {'Mainhand': '1', 'Offhand': '2', 'Head': '3', 'Body': '4',
                  'Legs': '5', 'Hands': '6', 'Feet': '7', 'Ring': '8'}
@@ -201,20 +204,20 @@ class Char:
         if unequipping_obj not in self.inventory:
             self.inventory.append(unequipping_obj)
         ohAtkPenalty = (0.7 if equipping_str == 'Offhand' else 1)
-        self.stats['melee_boost'] -= unequipping_obj.melee_atk * ohAtkPenalty
-        self.stats['magic_boost'] -= unequipping_obj.magic_atk * ohAtkPenalty
-        self.stats['hp_regen'] -= unequipping_obj.hp_regen
-        self.stats['mp_regen'] -= unequipping_obj.mp_regen
+        self.stats['melee_boost'] -= unequipping_obj.stats['melee_boost'] * ohAtkPenalty
+        self.stats['magic_boost'] -= unequipping_obj.stats['magic_boost'] * ohAtkPenalty
+        self.stats['hp_regen'] -= unequipping_obj.stats['hp_regen']
+        self.stats['mp_regen'] -= unequipping_obj.stats['mp_regen']
         self.equipment[equipping_str] = ''
         print(f"You unequip your {unequipping_obj.name}.")
         unequipping_obj.quantity += 1
 
     def equipping(self, equipping_obj, slot_option_choice):
         ohAtkPenalty = (0.7 if slot_option_choice == '2' else 1)
-        self.stats['melee_boost'] += equipping_obj.melee_atk * ohAtkPenalty
-        self.stats['magic_boost'] += equipping_obj.magic_atk * ohAtkPenalty
-        self.stats['hp_regen'] += equipping_obj.hp_regen
-        self.stats['mp_regen'] += equipping_obj.mp_regen
+        self.stats['melee_boost'] += equipping_obj.stats['melee_boost'] * ohAtkPenalty
+        self.stats['magic_boost'] += equipping_obj.stats['magic_boost'] * ohAtkPenalty
+        self.stats['hp_regen'] += equipping_obj.stats['hp_regen']
+        self.stats['mp_regen'] += equipping_obj.stats['mp_regen']
         equipping_obj.quantity -= 1
         if equipping_obj.quantity == 0:
             self.inventory.remove(equipping_obj)
@@ -304,12 +307,12 @@ class Char:
                     for _ in choice:  # allows consuming multiple items at once
                         if i[0] in self.inventory:
                             print(f"You drink the {i[0].name}.")
-                            self.stats['hp_current'] = self.stats['hp_current'] + i[0].hp_regen
-                            self.stats['mp_current'] = self.stats['mp_current'] + i[0].mp_regen
-                            if i[0].hp_regen:
+                            self.stats['hp_current'] = self.stats['hp_current'] + i[0].stats['hp_regen']
+                            self.stats['mp_current'] = self.stats['mp_current'] + i[0].stats['mp_regen']
+                            if i[0].stats['hp_regen']:
                                 print("You now have", math.floor(self.stats['hp_current']), "hp.")
-                            if i[0].mp_regen:
-                                print("You gain", i[0].mp_regen, "mp.")
+                            if i[0].stats['mp_regen']:
+                                print("You gain", i[0].stats['mp_regen'], "mp.")
                             i[0].quantity -= 1
                             if i[0].quantity == 0:
                                 self.inventory.remove(i[0])
@@ -326,20 +329,20 @@ class Char:
             for k, v in self.equipment.items():
                 hotkeyid = count
                 if v:
-                    item_list.append([v, hotkeyid])
+                    item_list.append(v)
                     count += 1
         elif context == "weaponsmith":
             for i in self.inventory:
                 if isinstance(i, class_type):
                     if "Mainhand" in i.slot or "Offhand" in i.slot:
                         hotkeyid = count
-                        item_list.append([i, hotkeyid])
+                        item_list.append(i)
                         count += 1
         else:
             for i in self.inventory:
                 if isinstance(i, class_type):
                     hotkeyid = count
-                    item_list.append([i, hotkeyid])
+                    item_list.append(i)
                     count += 1
         if item_list:
             # FORMAT THE INTERFACE
@@ -363,27 +366,27 @@ class Char:
                 else:
                     print(f"{'':6}{'Type':14}")
 
-            for i in item_list:
-                if i[0]:  # checks for existence. Had trouble here while unequipping w/o this check.
-                    hotkey = f"[{str(i[1])}]"
-                    name = i[0].name
-                    if class_type == Gear:
-                        value = ''
-                        if context in ['weaponsmith', 'armorsmith', 'apothecary']:
-                            value = i[0].value
-                        atk_str = ''
-                        if i[0].melee_atk:
-                            atk_str = f"({str(i[0].melee_atk)})"
-                        elif i[0].magic_atk:
-                            atk_str = f"({str(i[0].magic_atk)})"
-                        regen_str = ''
-                        if i[0].hp_regen:
-                            regen_str = f"+ {str(i[0].hp_regen)} hp/turn"
-                        if i[0].mp_regen:
-                            regen_str = f"+ {str(i[0].mp_regen)} mp/turn"
-                        print(f"{hotkey:<6}{name:<20}{atk_str:^10}{regen_str:^20}{value:>8}")
-                    elif class_type in [Consumable, Bait]:
-                        print(f"{hotkey:6}{name:14}{i[0].quantity:^8}")
+            for index, i in enumerate(item_list):
+                # if i[0]:  # checks for existence. Had trouble here while unequipping w/o this check.
+                hotkey = f"[{index + 1}]"
+                # name = i[0].name
+                if class_type == Gear:
+                    value = ''
+                    if context in ['weaponsmith', 'armorsmith', 'apothecary']:
+                        value = i.value
+                    atk_str = ''
+                    if i.stats['melee_boost']:
+                        atk_str = f"({str(i.stats['melee_boost'])})"
+                    elif i.stats['magic_boost']:
+                        atk_str = f"({str(i.stats['magic_boost'])})"
+                    regen_str = ''
+                    if i.stats['hp_regen']:
+                        regen_str = f"+ {str(i.stats['hp_regen'])} hp/turn"
+                    if i.stats['mp_regen']:
+                        regen_str = f"+ {str(i.stats['mp_regen'])} mp/turn"
+                    print(f"{hotkey:<6}{i.name:<20}{atk_str:^10}{regen_str:^20}{value:>8}")
+                elif class_type in [Consumable, Bait]:
+                    print(f"{hotkey:6}{i.name:14}{i.quantity:^8}")
             print('----+' * 13, sep='')
         return item_list
 
@@ -421,13 +424,13 @@ class Mob:
         for index, odds in chance.items():
             if odds < 2:
                 self.inventory.append(pack[index])
-                self.equipping(pack[index])
+                self.equipping(gear_dict[pack[index]])
 
     def equipping(self, equipping_obj):
-        self.stats['melee_boost'] += equipping_obj.melee_atk
-        self.stats['magic_boost'] += equipping_obj.magic_atk
-        self.stats['hp_regen'] += equipping_obj.hp_regen
-        self.stats['mp_regen'] += equipping_obj.mp_regen
+        self.stats['melee_boost'] += equipping_obj.stats['melee_boost']
+        self.stats['magic_boost'] += equipping_obj.stats['magic_boost']
+        self.stats['hp_regen'] += equipping_obj.stats['hp_regen']
+        self.stats['mp_regen'] += equipping_obj.stats['mp_regen']
 
     def regen(self):
         if self.stats['mp_current'] < self.stats['mp_base']:
@@ -438,17 +441,17 @@ class Mob:
 
     def plunder(self, hero):
         for i in self.inventory:
-            print(i.name, "looted!")
-            if i not in hero.inventory:
-                hero.inventory.append(i)
-            i.quantity += 1
+            print(gear_dict[i].name, "looted!")
+            if gear_dict[i] not in hero.inventory:
+                hero.inventory.append(gear_dict[i])
+            gear_dict[i].quantity += 1
         for i in self.loot[0]:
             chance = random.randrange(1, 100)
             if chance > 95:
-                if i not in hero.inventory:
-                    hero.inventory.append(i)
+                if gear_dict[i] not in hero.inventory:
+                    hero.inventory.append(gear_dict[i])
                 quantity_looted = 1
-                if isinstance(i, Bait):
+                if isinstance(gear_dict[i], Bait):
                     quantity_looted = random.randint(8, 12)
                 i.quantity += quantity_looted
                 print("You have looted ", quantity_looted, ' ', i.name, '.', sep='')
@@ -461,155 +464,28 @@ class Mob:
             hero.level_up()
 
 
-class Item:
-    def __init__(self, name, tier, value, quantity=0):
-        self.name = name
-        self.tier = tier
-        self.value = value
-        self.quantity = quantity
-
-
-class Gear(Item):
-    def __init__(self, name, tier, value, dmg_style, slot, quantity=0,
-                 melee_atk=0, magic_atk=0, poison_atk=0, hp_regen=0, mp_regen=0,
-                 durability=100):
-        super().__init__(name, tier, value, quantity)
-        self.dmg_style = dmg_style  # melee, magic, etc.
-        self.slot = slot  # gear slot it can go in (mainhand, head, etc.)
-
-        self.melee_atk = melee_atk
-        self.magic_atk = magic_atk
-        self.poison_atk = poison_atk
-        self.hp_regen = hp_regen
-        self.mp_regen = mp_regen
-        self.durability = durability
-
-
-class Consumable(Item):
-    def __init__(self, name, tier, value, melee_atk=0, magic_atk=0, poison_atk=0,
-                 hp_regen=0, mp_regen=0, quantity=0):
-        super().__init__(name, tier, value, quantity)
-        self.melee_atk = melee_atk
-        self.magic_atk = magic_atk
-        self.poison_atk = poison_atk
-        self.hp_regen = hp_regen
-        self.mp_regen = mp_regen
-
-
-class Bait(Item):
-    def __init__(self, name, tier, value, quantity=0):
-        super().__init__(name, tier, value, quantity)
-
-
-class Tool(Item):
-    def __init__(self, name, tier, value, durability=100, quantity=0):
-        super().__init__(name, tier, value, quantity)
-        self.durability = durability
-
-
-# name, tier, value, dmg_style, slot, quantity=0,
-# melee_atk=0, magic_atk=0, poison_atk=0, hp_regen=0, mp_regen=0, durability=100
-small_dagger = Gear("small dagger", 1, 10, "melee", ['Mainhand', 'Offhand'],
-                    melee_atk=12)
-scimitar = Gear("scimitar", 1, 16, "melee", ['Mainhand', 'Offhand'],
-                melee_atk=20)
-kings_blade = Gear("King's blade", 2, 26, "melee", ['Mainhand', 'Offhand'],
-                   melee_atk=25)
-
-ilan_branch = Gear("ilam branch", 1, 10, "magic", ['Mainhand', 'Offhand'],
-                   magic_atk=7, mp_regen=1)
-wand = Gear("azalea wand", 1, 16, "magic", ['Mainhand', 'Offhand'],
-            magic_atk=20, mp_regen=2)
-crooked_staff = Gear("crooked staff", 1, 24, "magic", ['Mainhand', 'Offhand'],
-                     magic_atk=15, mp_regen=4)
-
-list_of_mainhand = [small_dagger, scimitar, kings_blade,
-                    ilan_branch, wand, crooked_staff]
-
-targe = Gear("targe", 1, 10, "melee, defense", ['Offhand'],
-             melee_atk=5)
-glimmering_orb = Gear("glimmering orb", 2, 36, "magic", ['Offhand'],
-                      magic_atk=8, mp_regen=6)
-
-list_of_offhand = [targe, glimmering_orb]
-
-leather_cap = Gear("leather cap", 1, 8, "melee defense", "Head",
-                   hp_regen=3)
-
-list_of_head = [leather_cap]
-
-heavy_tunic = Gear("heavy tunic", 1, 8, "defense", "Body",
-                   melee_atk=5, hp_regen=5)
-
-list_of_body = [heavy_tunic]
-
-thick_chaps = Gear("thick chaps", 1, 16, "defense", "Legs",
-                   melee_atk=4, hp_regen=2)
-
-list_of_legs = [thick_chaps]
-
-iron_gloves = Gear("iron gloves", 1, 10, "defense", "Hands",
-                   melee_atk=2, magic_atk=2)
-
-list_of_hands = [iron_gloves]
-
-cut_boots = Gear("cut boots", 1, 10, "defense", "Feet",
-                 melee_atk=2)
-
-list_of_feet = [cut_boots]
-
-old_ring = Gear("old ring", 2, 28, "magic", "Ring",
-                magic_atk=14, mp_regen=7)
-clay_ring = Gear("clay ring", 1, 22, "magic", "Ring",
-                 melee_atk=14, hp_regen=7)
-
-list_of_ring = [old_ring, clay_ring]
-
-list_of_common_gear = [scimitar, kings_blade, targe, wand, crooked_staff, leather_cap, heavy_tunic, thick_chaps,
-                       iron_gloves, cut_boots, old_ring, clay_ring]
-
-gold = Item("Gold", 1, 1)  # this should be part of Char.stats, not an Item instance
-
-# hotkey, name, tier, value, melee_atk, magic_atk, poison_atk, hp_regen, mp_regen
-potion = Consumable("potion", 1, 14, hp_regen=25)
-ether = Consumable("ether", 1, 14, mp_regen=8)
-elixir = Consumable("elixir", 2, 58, mp_regen=48)
-
-ilan_berries = Bait("ilan berries", 1, 2)
-thread_worms = Bait("thread worms", 1, 2)
-
-list_of_common_items = [potion, ether, elixir,
-                        ilan_berries, thread_worms]
-
-list_of_bait = [ilan_berries, thread_worms]
-
-herring = Item("herring", 1, 6)
-salmon = Item("salmon", 1, 6)
-
-logs = Item("logs", 1, 2)
-worn_hatchet = Tool("worn hatchet", 1, 4, 20)
-
-
 def player():
-    return Char({"race": "human",
-                          "hp_current": 200,
-                          "hp_base": 200,
-                          "hp_regen": 0,
-                          "mp_current": 10,
-                          "mp_base": 10,
-                          "mp_regen": 0,
-                          "melee_base_atk": 14,
-                          "melee_boost": 0,
-                          "magic_base_atk": 25,
-                          "magic_boost": 0,
-                          "level": 1,
-                          "xp": 0,
-                          "prev_level_xp": 0,
-                          "next_level_at": 83},
+    return Char({'race': 'human',
+                 'hp_current': 200,
+                 'hp_base': 200,
+                 'hp_regen': 0,
+                 'mp_current': 10,
+                 'mp_base': 10,
+                 'mp_regen': 0,
+                 'melee_base_atk': 14,
+                 'melee_boost': 0,
+                 'magic_base_atk': 25,
+                 'magic_boost': 0,
+                 'burden_current': 0,
+                 'burden_limit': 20,
+                 'level': 1,
+                 'xp': 0,
+                 'prev_level_xp': 0,
+                 'next_level_at': 83},
                 # INVENTORY,
                 [],
                 # ABILITIES
-                {"Str": Strike, "Heal": Heal, "Cbust": Combust},
+                {'Str': Strike, 'Heal': Heal, 'Cbust': Combust},
                 # ABILITY BAR
                 {'1': Strike, '2': '', '3': '', '4': '', '5': '', '6': ''},
                 # EQUIPMENT
@@ -618,126 +494,126 @@ def player():
 
 
 def thief():
-    return Mob({"race": "thief",
-                "hp_current": 200,
-                "hp_base": 200,
-                "hp_regen": 0,
-                "mp_current": 10,
-                "mp_base": 10,
-                "mp_regen": 0,
-                "melee_base_atk": 14,
-                "melee_boost": 0,
-                "melee_affinity": 0.7,
-                "magic_base_atk": 8,
-                "magic_boost": 0,
-                "magic_affinity": 0.2,
-                "level": 1,
-                "xp_worth": 12},
+    return Mob({'race': 'thief',
+                'hp_current': 200,
+                'hp_base': 200,
+                'hp_regen': 0,
+                'mp_current': 10,
+                'mp_base': 10,
+                'mp_regen': 0,
+                'melee_base_atk': 14,
+                'melee_boost': 0,
+                'melee_affinity': 0.7,
+                'magic_base_atk': 8,
+                'magic_boost': 0,
+                'magic_affinity': 0.2,
+                'level': 1,
+                'xp_worth': 12},
                [[list_of_common_items], [list_of_bait]],
-               {"Fire": Fire, "Heal": Heal, "Rush": Rush})
+               {'Fire': Fire, 'Heal': Heal, 'Rush': Rush})
 
 
 def kaelas_boar():
-    return Mob({"race": "Kaelas boar",
-                "hp_current": 60,
-                "hp_base": 60,
-                "hp_regen": 0,
-                "mp_current": 4,
-                "mp_base": 4,
-                "mp_regen": 0,
-                "melee_base_atk": 24,
-                "melee_boost": 0,
-                "melee_affinity": 0.7,
-                "magic_base_atk": 4,
-                "magic_boost": 0,
-                "magic_affinity": 0.2,
-                "level": 1,
-                "xp_worth": 8},
+    return Mob({'race': 'Kaelas boar',
+                'hp_current': 60,
+                'hp_base': 60,
+                'hp_regen': 0,
+                'mp_current': 4,
+                'mp_base': 4,
+                'mp_regen': 0,
+                'melee_base_atk': 24,
+                'melee_boost': 0,
+                'melee_affinity': 0.7,
+                'magic_base_atk': 4,
+                'magic_boost': 0,
+                'magic_affinity': 0.2,
+                'level': 1,
+                'xp_worth': 8},
                [list_of_common_items],
-               {"Heal": Heal, "Rush": Rush})
+               {'Heal': Heal, 'Rush': Rush})
 
 
 def wolves():
-    return Mob({"race": "pack of wolves",
-                "hp_current": 300,
-                "hp_base": 300,
-                "hp_regen": 0,
-                "mp_current": 10,
-                "mp_base": 10,
-                "mp_regen": 0,
-                "melee_base_atk": 7,
-                "melee_boost": 0,
-                "melee_affinity": 0.7,
-                "magic_base_atk": 0,
-                "magic_boost": 0,
-                "magic_affinity": 0.2,
-                "level": 1,
-                "xp_worth": 14},
+    return Mob({'race': 'pack of wolves',
+                'hp_current': 300,
+                'hp_base': 300,
+                'hp_regen': 0,
+                'mp_current': 10,
+                'mp_base': 10,
+                'mp_regen': 0,
+                'melee_base_atk': 7,
+                'melee_boost': 0,
+                'melee_affinity': 0.7,
+                'magic_base_atk': 0,
+                'magic_boost': 0,
+                'magic_affinity': 0.2,
+                'level': 1,
+                'xp_worth': 14},
                [list_of_common_items],
-               {"Strike": Strike})
+               {'Strike': Strike})
 
 
 def cultist():
-    return Mob({"race": "cultist",
-                "hp_current": 200,
-                "hp_base": 200,
-                "hp_regen": 10,
-                "mp_current": 100,
-                "mp_base": 100,
-                "mp_regen": 4,
-                "melee_base_atk": 8,
-                "melee_boost": 0,
-                "melee_affinity": 0.7,
-                "magic_base_atk": 38,
-                "magic_boost": 0,
-                "magic_affinity": 0.2,
-                "level": 1,
-                "xp_worth": 46},
+    return Mob({'race': 'cultist',
+                'hp_current': 200,
+                'hp_base': 200,
+                'hp_regen': 10,
+                'mp_current': 100,
+                'mp_base': 100,
+                'mp_regen': 4,
+                'melee_base_atk': 8,
+                'melee_boost': 0,
+                'melee_affinity': 0.7,
+                'magic_base_atk': 38,
+                'magic_boost': 0,
+                'magic_affinity': 0.2,
+                'level': 1,
+                'xp_worth': 46},
                [[list_of_common_items], [list_of_bait]],
-               {"Fire": Fire, "Fira": Fira, "Firaga": Firaga, "Heal": Heal, "Rush": Rush})
+               {'Fire': Fire, 'Fira': Fira, 'Firaga': Firaga, 'Heal': Heal, 'Rush': Rush})
 
 
 list_of_mobs = [thief, kaelas_boar, wolves, cultist]
 
 
 def giant_kitty():
-    return Mob({"race": "giant....kitty?",
-                "hp_current": 3000,
-                "hp_base": 3000,
-                "hp_regen": 0,
-                "mp_current": 10,
-                "mp_base": 10,
-                "mp_regen": 0,
-                "melee_base_atk": 75,
-                "melee_boost": 0,
-                "melee_affinity": 0.7,
-                "magic_base_atk": 85,
-                "magic_boost": 0,
-                "magic_affinity": 0.2,
-                "level": 1,
-                "xp_worth": 666},
+    return Mob({'race': 'giant....kitty?',
+                'hp_current': 3000,
+                'hp_base': 3000,
+                'hp_regen': 0,
+                'mp_current': 10,
+                'mp_base': 10,
+                'mp_regen': 0,
+                'melee_base_atk': 75,
+                'melee_boost': 0,
+                'melee_affinity': 0.7,
+                'magic_base_atk': 85,
+                'magic_boost': 0,
+                'magic_affinity': 0.2,
+                'level': 1,
+                'xp_worth': 666},
                [list_of_common_items],
-               {"Heal": Heal, "Firaga": Firaga})
+               {'Heal': Heal, 'Firaga': Firaga})
 
 
 def kraken():
-    return Mob({"race": "Kraken",
-                "hp_current": 5000,
-                "hp_base": 5000,
-                "hp_regen": 0,
-                "mp_current": 79,
-                "mp_base": 79,
-                "mp_regen": 4,
-                "melee_base_atk": 72,
-                "melee_boost": 0,
-                "melee_affinity": 0.35,
-                "magic_base_atk": 68,
-                "magic_boost": 0,
-                "magic_affinity": 0.65,
-                "level": 1,
-                "xp_worth": 1247},
+    return Mob({'race': 'Kraken',
+                'hp_current': 5000,
+                'hp_base': 5000,
+                'hp_regen': 0,
+                'mp_current': 79,
+                'mp_base': 79,
+                'mp_regen': 4,
+                'melee_base_atk': 72,
+                'melee_boost': 0,
+                'melee_affinity': 0.35,
+                'magic_base_atk': 68,
+                'magic_boost': 0,
+                'magic_affinity': 0.65,
+                'level': 1,
+                'xp_worth': 1247},
                [list_of_common_items],
-               {"Fira": Fira, "Firaga": Firaga})
+               {'Fira': Fira, 'Firaga': Firaga})
 
 
 list_of_bosses = [giant_kitty, kraken]
