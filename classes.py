@@ -482,17 +482,17 @@ def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_rege
 
 
 mob_dict = {'thief':        create_mob('thief', 200, 200, 0, 10, 10, 0, 14, 0, 0.7, 8, 0, 0.2, 1, 12,
-                                       [[list_of_common_items], [list_of_bait]],
-                                       {'Fire': Fire, 'Heal': Heal, 'Rush': Rush}),
+                                       [list_of_common_items, list_of_bait],
+                                       {'Fire', 'Heal', 'Rush'}),
             'kaelas_boar':  create_mob('Kaelas boar', 60, 60, 0, 4, 4, 0, 24, 0, 0.7, 4, 0, 0.2, 1, 8,
-                                       [list_of_common_items],
-                                       {'Heal': Heal, 'Rush': Rush}),
+                                       list_of_common_items,
+                                       {'Heal', 'Rush'}),
             'wolves':       create_mob('pack of wolves', 300, 300, 0, 10, 10, 0, 7, 0, 0.7, 0, 0, 0.2, 1, 14,
-                                       [list_of_common_items],
-                                       {'Strike': Strike}),
+                                       list_of_common_items,
+                                       {'Strike'}),
             'cultist':      create_mob('cultist', 200, 200, 10, 100, 100, 4, 8, 0, 0.7, 38, 0, 0.2, 1, 46,
-                                       [[list_of_common_items], [list_of_bait]],
-                                       {'Fire': Fire, 'Fira': Fira, 'Firaga': Firaga, 'Heal': Heal, 'Rush': Rush}),
+                                       [list_of_common_items, list_of_bait],
+                                       {'Fire', 'Fira', 'Firaga', 'Heal', 'Rush'}),
             }
 
 
@@ -525,86 +525,6 @@ def player():
                  'Ring': ''})
 
 
-# def thief():
-#     return Mob({'race': 'thief',
-#                 'hp_current': 200,
-#                 'hp_base': 200,
-#                 'hp_regen': 0,
-#                 'mp_current': 10,
-#                 'mp_base': 10,
-#                 'mp_regen': 0,
-#                 'melee_base_atk': 14,
-#                 'melee_boost': 0,
-#                 'melee_affinity': 0.7,
-#                 'magic_base_atk': 8,
-#                 'magic_boost': 0,
-#                 'magic_affinity': 0.2,
-#                 'level': 1,
-#                 'xp_worth': 12},
-#                [[list_of_common_items], [list_of_bait]],
-#                {'Fire': Fire, 'Heal': Heal, 'Rush': Rush})
-
-
-# def kaelas_boar():
-#     return Mob({'race': 'Kaelas boar',
-#                 'hp_current': 60,
-#                 'hp_base': 60,
-#                 'hp_regen': 0,
-#                 'mp_current': 4,
-#                 'mp_base': 4,
-#                 'mp_regen': 0,
-#                 'melee_base_atk': 24,
-#                 'melee_boost': 0,
-#                 'melee_affinity': 0.7,
-#                 'magic_base_atk': 4,
-#                 'magic_boost': 0,
-#                 'magic_affinity': 0.2,
-#                 'level': 1,
-#                 'xp_worth': 8},
-#                [list_of_common_items],
-#                {'Heal': Heal, 'Rush': Rush})
-
-
-# def wolves():
-#     return Mob({'race': 'pack of wolves',
-#                 'hp_current': 300,
-#                 'hp_base': 300,
-#                 'hp_regen': 0,
-#                 'mp_current': 10,
-#                 'mp_base': 10,
-#                 'mp_regen': 0,
-#                 'melee_base_atk': 7,
-#                 'melee_boost': 0,
-#                 'melee_affinity': 0.7,
-#                 'magic_base_atk': 0,
-#                 'magic_boost': 0,
-#                 'magic_affinity': 0.2,
-#                 'level': 1,
-#                 'xp_worth': 14},
-#                [list_of_common_items],
-#                {'Strike': Strike})
-
-
-# def cultist():
-#     return Mob({'race': 'cultist',
-#                 'hp_current': 200,
-#                 'hp_base': 200,
-#                 'hp_regen': 10,
-#                 'mp_current': 100,
-#                 'mp_base': 100,
-#                 'mp_regen': 4,
-#                 'melee_base_atk': 8,
-#                 'melee_boost': 0,
-#                 'melee_affinity': 0.7,
-#                 'magic_base_atk': 38,
-#                 'magic_boost': 0,
-#                 'magic_affinity': 0.2,
-#                 'level': 1,
-#                 'xp_worth': 46},
-#                [[list_of_common_items], [list_of_bait]],
-#                {'Fire': Fire, 'Fira': Fira, 'Firaga': Firaga, 'Heal': Heal, 'Rush': Rush})
-
-
 list_of_mobs = [k for k, v in mob_dict.items()]
 
 
@@ -625,7 +545,7 @@ def giant_kitty():
                 'level': 1,
                 'xp_worth': 666},
                [list_of_common_items],
-               {'Heal': Heal, 'Firaga': Firaga})
+               {'Heal', 'Firaga'})
 
 
 def kraken():
@@ -645,7 +565,7 @@ def kraken():
                 'level': 1,
                 'xp_worth': 1247},
                [list_of_common_items],
-               {'Fira': Fira, 'Firaga': Firaga})
+               {'Fira', 'Firaga'})
 
 
 list_of_bosses = [giant_kitty, kraken]

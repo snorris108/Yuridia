@@ -414,27 +414,30 @@ def mob_turn(mob, hero):
         # decide if should heal
         rngesus = random.uniform(0, 1)
         if mob.stats['mp_current'] >= 3 and (mob.stats['hp_current'] / mob.stats['hp_base']) < 0.2 \
-                and "Heal" in mob.abilities:
+                and 'Heal' in mob.abilities:
             desire_to_heal = 1 - (mob.stats['hp_current'] / mob.stats['hp_base'])
             odds_to_heal = random.uniform(desire_to_heal, 1)
             if odds_to_heal >= rngesus:
-                mob.abilities['Heal'](mob, hero, context)
+                use_ability('Heal', hero, mob, context)
 
         elif rngesus < mob.stats['melee_affinity']:
-            if "Rush" in mob.abilities and mob.stats['melee_affinity'] > random.uniform(0, 1):
-                # mob.abilities['Rush'](hero, mob, context)
-                use_ability('Rush', hero, mob)
-            elif "Strike" in mob.abilities:
-                mob.abilities['Strike'](hero, mob, context)
+            if 'Rush' in mob.abilities and mob.stats['melee_affinity'] > random.uniform(0, 1):
+                use_ability('Rush', hero, mob, context)
+                if mob.stats['hp_current'] <= 0:
+                    mob.death(hero)
+                    return 'dead'
+
+            elif 'Strike' in mob.abilities:
+                use_ability('Strike', hero, mob, context)
             else:
                 mob_basic_atk(mob, hero)
         elif rngesus < mob.stats['melee_affinity'] + mob.stats['magic_affinity']:
-            if mob.stats['mp_current'] >= 18 and "Firaga" in mob.abilities:
-                mob.abilities['Firaga'](hero, mob, context)
-            elif mob.stats['mp_current'] >= 12 and "Fira" in mob.abilities:
-                mob.abilities['Fira'](hero, mob, context)
-            elif mob.stats['mp_current'] >= 6 and "Fire" in mob.abilities:
-                mob.abilities['Fire'](hero, mob, context)
+            if mob.stats['mp_current'] >= 18 and 'Firaga' in mob.abilities:
+                use_ability('Firaga', hero, mob, context)
+            elif mob.stats['mp_current'] >= 12 and 'Fira' in mob.abilities:
+                use_ability('Fira', hero, mob, context)
+            elif mob.stats['mp_current'] >= 6 and 'Fire' in mob.abilities:
+                use_ability('Fire', hero, mob, context)
             else:
                 mob_basic_atk(mob, hero)
         else:
@@ -473,12 +476,6 @@ def combat_template(mob, hero):
           f"{(hero.stats['magic_base_atk'] + hero.stats['magic_boost']):<20}",
           '\n', '-' * 60,
           sep='')
-
-
-def mob_basic_atk(mob, target):
-    strike = math.floor((mob.stats['melee_base_atk'] + mob.stats['melee_boost']) * random.uniform(0.7, 1.1))
-    target.stats['hp_current'] = math.floor(max(target.stats['hp_current'] - strike, 0))
-    print("You are hit for ", strike, " points.", sep='')
 
 
 def chest():
