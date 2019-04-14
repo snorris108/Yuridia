@@ -112,7 +112,7 @@ class Char:
               '\n',
               '-' * 60, sep='')
         self.menu_gear_equipped('while viewing character sheet')
-        self.load_ability_bar_display('while viewing character sheet')
+        self.display_ability_bar()
         print('\n')
 
     def menu_gear_equipped(self, context):
@@ -174,7 +174,7 @@ class Char:
                                 self.equipment[k] = gear_item
                     else:
                         for k, v in self.equipment.items():
-                            if k == gear_item.stats['slot']:
+                            if k in gear_item.stats['slot']:
                                 if self.equipment[k]:
                                     self.unequip(k, self.equipment[k])
                                 self.equipping(gear_item, gear_item.stats['slot'])
@@ -224,61 +224,57 @@ class Char:
         print(f"You equip your {equipping_obj.name}.")
 
     def view_abilities(self):
+        enumerated_abilities = {k: v for k, v in zip(range(1, len(self.abilities) + 1), self.abilities)}
         print("Learned Abilities:")
         print('-' * 30,
               '\n', ' Hotkey',
               '\n', '-' * 8, sep='')
-        for k, v in self.abilities.items():
-            hotkey_fmt = f"[{k}]"
-            print(f"{hotkey_fmt:10}{v.__name__}")
-        print('-' * 30,
-              '\n', "Enter the hotkey to select an ability to add. ([Enter]-cancel)", sep='')
-        choice = input()
-        choice = choice.capitalize()
-        if choice in self.abilities:
+        for index, ability in enumerated_abilities.items():
+            hotkey_fmt = f"[{index}]"
+            print(f"  {hotkey_fmt:6}{ability}")
+        print('-' * 30)
+        choice = int(input("Enter the hotkey to select an ability to add. ([Enter]-cancel)\n"))
+        if choice in enumerated_abilities.keys():
             print("Add to which slot?")
-            self.load_ability_bar_display('while viewing character sheet')
+            self.display_ability_bar()
             slot_choice = input()
-            for k, v in self.abilities.items():
-                if choice == k:
-                    self.ability_bar[slot_choice] = v
-                    print("You add ", v.__name__, " to your bar.", sep='')
+            self.ability_bar[slot_choice] = enumerated_abilities[choice]
+            print('\n' * 80)
+            print("You add ", enumerated_abilities[choice], " to your bar.", sep='')
 
-    def learn_ability(self, ability_key, ability_value):
-        self.abilities.setdefault(ability_key, ability_value)
-        print(f"You've learned {ability_key}. Access your abilities with [A].")
+    def learn_ability(self, ability):
+        self.abilities.append(ability)
+        self.abilities = sorted(self.abilities, key=lambda x: ability_weights[x])
+        print(f"You've learned {ability}. Access your abilities with [A].")
 
-    def load_ability_bar_display(self, context):
-        if context == "while viewing character sheet":
-            option1 = ''
-            option2 = ''
-        else:
-            option1 = '   Option'
-            option2 = '[O]'
-        cell = '}-{'
+    def display_ability_bar(self):
+        joint = '}-{'
+        count = 0
 
-        # initialize as blanks
-        abil_bar_disp = {'1': '     ',
-                         '2': '     ',
-                         '3': '     ',
-                         '4': '     ',
-                         '5': '     ',
-                         '6': '     '}
+        print("    1         2         3         4         5         6\n{", end='')
         for k, v in self.ability_bar.items():
-            for a, b in self.abilities.items():
-                if self.abilities[a] == v:
-                    # update
-                    abil_bar_disp[k] = a
+            count += 1
+            print(f"{v:^7}", end='') if self.ability_bar[k] else print('       ', end='')
+            if count < 6:
+                print(joint, end='')
+        print('}')
 
+        #     if ability in self.abilities:
+        #         abil_bar_disp[k] = ability
+        #     for a, b in self.abilities.items():
+        #         if self.abilities[a] == v:
+        #             update
+        #             abil_bar_disp[k] = a
+        #
         # display updated
-        print("    1        2        3        4        5        6", option1,
-              '\n',
-              f"{'{'}{abil_bar_disp['1']:^6}{cell}"
-              f"{abil_bar_disp['2']:^6}{cell}"
-              f"{abil_bar_disp['3']:^6}{cell}"
-              f"{abil_bar_disp['4']:^6}{cell}"
-              f"{abil_bar_disp['5']:^6}{cell}"
-              f"{abil_bar_disp['6']:^6}{'}'}{option2:>6}")
+        # print("    1        2        3        4        5        6",
+        #       '\n',
+        #       f"{'{'}{abil_bar_disp['1']:^6}{joint}"
+        #       f"{abil_bar_disp['2']:^6}{joint}"
+        #       f"{abil_bar_disp['3']:^6}{joint}"
+        #       f"{abil_bar_disp['4']:^6}{joint}"
+        #       f"{abil_bar_disp['5']:^6}{joint}"
+        #       f"{abil_bar_disp['6']:^6}{'}'}")
 
     def consumables(self):
         consumables_list = []
@@ -462,6 +458,42 @@ class Mob:
         self.plunder(hero)
         if hero.stats['xp'] > hero.stats['next_level_at']:
             hero.level_up()
+        del self
+
+
+def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_regen, melee_base_atk, melee_boost,
+               melee_affinity, magic_base_atk, magic_boost, magic_affinity, level, xp_worth, loot, abilities):
+    return Mob({'race': race,
+                'hp_current': hp_current,
+                'hp_base': hp_base,
+                'hp_regen': hp_regen,
+                'mp_current': mp_current,
+                'mp_base': mp_base,
+                'mp_regen': mp_regen,
+                'melee_base_atk': melee_base_atk,
+                'melee_boost': melee_boost,
+                'melee_affinity': melee_affinity,
+                'magic_base_atk': magic_base_atk,
+                'magic_boost': magic_boost,
+                'magic_affinity': magic_affinity,
+                'level': level,
+                'xp_worth': xp_worth},
+               loot, abilities)
+
+
+mob_dict = {'thief':        create_mob('thief', 200, 200, 0, 10, 10, 0, 14, 0, 0.7, 8, 0, 0.2, 1, 12,
+                                       [[list_of_common_items], [list_of_bait]],
+                                       {'Fire': Fire, 'Heal': Heal, 'Rush': Rush}),
+            'kaelas_boar':  create_mob('Kaelas boar', 60, 60, 0, 4, 4, 0, 24, 0, 0.7, 4, 0, 0.2, 1, 8,
+                                       [list_of_common_items],
+                                       {'Heal': Heal, 'Rush': Rush}),
+            'wolves':       create_mob('pack of wolves', 300, 300, 0, 10, 10, 0, 7, 0, 0.7, 0, 0, 0.2, 1, 14,
+                                       [list_of_common_items],
+                                       {'Strike': Strike}),
+            'cultist':      create_mob('cultist', 200, 200, 10, 100, 100, 4, 8, 0, 0.7, 38, 0, 0.2, 1, 46,
+                                       [[list_of_common_items], [list_of_bait]],
+                                       {'Fire': Fire, 'Fira': Fira, 'Firaga': Firaga, 'Heal': Heal, 'Rush': Rush}),
+            }
 
 
 def player():
@@ -482,98 +514,98 @@ def player():
                  'xp': 0,
                  'prev_level_xp': 0,
                  'next_level_at': 83},
-                # INVENTORY,
+                # INVENTORY     list
                 [],
-                # ABILITIES
-                {'Str': Strike, 'Heal': Heal, 'Cbust': Combust},
-                # ABILITY BAR
-                {'1': Strike, '2': '', '3': '', '4': '', '5': '', '6': ''},
-                # EQUIPMENT
+                # ABILITIES     set
+                ['Strike', 'Heal', 'Combust'],
+                # ABILITY BAR   dict
+                {'1': 'Strike', '2': '', '3': '', '4': '', '5': '', '6': ''},
+                # EQUIPMENT     dict
                 {'Mainhand': '', 'Offhand': '', 'Head': '', 'Body': '', 'Legs': '', 'Hands': '', 'Feet': '',
                  'Ring': ''})
 
 
-def thief():
-    return Mob({'race': 'thief',
-                'hp_current': 200,
-                'hp_base': 200,
-                'hp_regen': 0,
-                'mp_current': 10,
-                'mp_base': 10,
-                'mp_regen': 0,
-                'melee_base_atk': 14,
-                'melee_boost': 0,
-                'melee_affinity': 0.7,
-                'magic_base_atk': 8,
-                'magic_boost': 0,
-                'magic_affinity': 0.2,
-                'level': 1,
-                'xp_worth': 12},
-               [[list_of_common_items], [list_of_bait]],
-               {'Fire': Fire, 'Heal': Heal, 'Rush': Rush})
+# def thief():
+#     return Mob({'race': 'thief',
+#                 'hp_current': 200,
+#                 'hp_base': 200,
+#                 'hp_regen': 0,
+#                 'mp_current': 10,
+#                 'mp_base': 10,
+#                 'mp_regen': 0,
+#                 'melee_base_atk': 14,
+#                 'melee_boost': 0,
+#                 'melee_affinity': 0.7,
+#                 'magic_base_atk': 8,
+#                 'magic_boost': 0,
+#                 'magic_affinity': 0.2,
+#                 'level': 1,
+#                 'xp_worth': 12},
+#                [[list_of_common_items], [list_of_bait]],
+#                {'Fire': Fire, 'Heal': Heal, 'Rush': Rush})
 
 
-def kaelas_boar():
-    return Mob({'race': 'Kaelas boar',
-                'hp_current': 60,
-                'hp_base': 60,
-                'hp_regen': 0,
-                'mp_current': 4,
-                'mp_base': 4,
-                'mp_regen': 0,
-                'melee_base_atk': 24,
-                'melee_boost': 0,
-                'melee_affinity': 0.7,
-                'magic_base_atk': 4,
-                'magic_boost': 0,
-                'magic_affinity': 0.2,
-                'level': 1,
-                'xp_worth': 8},
-               [list_of_common_items],
-               {'Heal': Heal, 'Rush': Rush})
+# def kaelas_boar():
+#     return Mob({'race': 'Kaelas boar',
+#                 'hp_current': 60,
+#                 'hp_base': 60,
+#                 'hp_regen': 0,
+#                 'mp_current': 4,
+#                 'mp_base': 4,
+#                 'mp_regen': 0,
+#                 'melee_base_atk': 24,
+#                 'melee_boost': 0,
+#                 'melee_affinity': 0.7,
+#                 'magic_base_atk': 4,
+#                 'magic_boost': 0,
+#                 'magic_affinity': 0.2,
+#                 'level': 1,
+#                 'xp_worth': 8},
+#                [list_of_common_items],
+#                {'Heal': Heal, 'Rush': Rush})
 
 
-def wolves():
-    return Mob({'race': 'pack of wolves',
-                'hp_current': 300,
-                'hp_base': 300,
-                'hp_regen': 0,
-                'mp_current': 10,
-                'mp_base': 10,
-                'mp_regen': 0,
-                'melee_base_atk': 7,
-                'melee_boost': 0,
-                'melee_affinity': 0.7,
-                'magic_base_atk': 0,
-                'magic_boost': 0,
-                'magic_affinity': 0.2,
-                'level': 1,
-                'xp_worth': 14},
-               [list_of_common_items],
-               {'Strike': Strike})
+# def wolves():
+#     return Mob({'race': 'pack of wolves',
+#                 'hp_current': 300,
+#                 'hp_base': 300,
+#                 'hp_regen': 0,
+#                 'mp_current': 10,
+#                 'mp_base': 10,
+#                 'mp_regen': 0,
+#                 'melee_base_atk': 7,
+#                 'melee_boost': 0,
+#                 'melee_affinity': 0.7,
+#                 'magic_base_atk': 0,
+#                 'magic_boost': 0,
+#                 'magic_affinity': 0.2,
+#                 'level': 1,
+#                 'xp_worth': 14},
+#                [list_of_common_items],
+#                {'Strike': Strike})
 
 
-def cultist():
-    return Mob({'race': 'cultist',
-                'hp_current': 200,
-                'hp_base': 200,
-                'hp_regen': 10,
-                'mp_current': 100,
-                'mp_base': 100,
-                'mp_regen': 4,
-                'melee_base_atk': 8,
-                'melee_boost': 0,
-                'melee_affinity': 0.7,
-                'magic_base_atk': 38,
-                'magic_boost': 0,
-                'magic_affinity': 0.2,
-                'level': 1,
-                'xp_worth': 46},
-               [[list_of_common_items], [list_of_bait]],
-               {'Fire': Fire, 'Fira': Fira, 'Firaga': Firaga, 'Heal': Heal, 'Rush': Rush})
+# def cultist():
+#     return Mob({'race': 'cultist',
+#                 'hp_current': 200,
+#                 'hp_base': 200,
+#                 'hp_regen': 10,
+#                 'mp_current': 100,
+#                 'mp_base': 100,
+#                 'mp_regen': 4,
+#                 'melee_base_atk': 8,
+#                 'melee_boost': 0,
+#                 'melee_affinity': 0.7,
+#                 'magic_base_atk': 38,
+#                 'magic_boost': 0,
+#                 'magic_affinity': 0.2,
+#                 'level': 1,
+#                 'xp_worth': 46},
+#                [[list_of_common_items], [list_of_bait]],
+#                {'Fire': Fire, 'Fira': Fira, 'Firaga': Firaga, 'Heal': Heal, 'Rush': Rush})
 
 
-list_of_mobs = [thief, kaelas_boar, wolves, cultist]
+list_of_mobs = [k for k, v in mob_dict.items()]
 
 
 def giant_kitty():

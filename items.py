@@ -81,21 +81,24 @@ list_of_legs = [k for k, v in gear_dict.items() if 'Legs' in v.stats['slot']]
 list_of_hands = [k for k, v in gear_dict.items() if 'Hands' in v.stats['slot']]
 list_of_feet = [k for k, v in gear_dict.items() if 'Feet' in v.stats['slot']]
 list_of_ring = [k for k, v in gear_dict.items() if 'Ring' in v.stats['slot']]
+
 list_of_common_gear = [k for k, v in gear_dict.items() if v.tier == 1]
 
-consumable_dict = {}
-# # hotkey, name, value, melee_atk, magic_atk, poison_atk, hp_regen, mp_regen
-# potion = Consumable('potion', 1, 14, hp_regen=25)
-# ether = Consumable('ether', 1, 14, mp_regen=8)
-# elixir = Consumable('elixir', 2, 58, mp_regen=48)
+consumables_dict = {'potion':   create_item('potion', 14, 1, 'heal', None, 0, 0, 0, 25, 0),
+                    'ether':    create_item('ether', 14, 1, 'heal', None, 0, 0, 0, 0, 8),
+                    'elixir':   create_item('elixir', 58, 2, 'heal', None, 0, 0, 0, 0, 48),
+                    'beer':     create_item('beer', 12, 1, 'heal', None, 0, 0, 0, 18, 32)}
 
-bait_dict = {}
-# ilan_berries = Bait('ilan berries', 1, 2)
-# thread_worms = Bait('thread worms', 1, 2)
+list_of_consumables = [k for k, v in consumables_dict.items()]
+
+bait_dict = {'ilan_berries':    create_item('ilan berries', 2, 1, None, None, 0, 0, 0, 0, 0),
+             'thread_worms':    create_item('thread worms', 2, 1, None, None, 0, 0, 0, 0, 0)}
+
+list_of_bait = [k for k, v in bait_dict.items()]
+
+items_dict = consumables_dict.update(bait_dict)
 
 list_of_common_items = []
-
-list_of_bait = []
 
 # herring = Item('herring', 1, 6)
 # salmon = Item('salmon', 1, 6)
