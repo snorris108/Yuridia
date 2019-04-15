@@ -6,10 +6,10 @@ import random
 def mob_basic_atk(mob, target):
     strike = math.floor((mob.stats['melee_base_atk'] + mob.stats['melee_boost']) * random.uniform(0.7, 1.1))
     target.stats['hp_current'] = math.floor(max(target.stats['hp_current'] - strike, 0))
-    print("You are hit for ", strike, " points.", sep='')
+    print(f"You are hit for {strike} points.")
 
 
-def use_ability(name, target, caster, context, learning_rate=1):
+def use_ability(name, target, caster, context):
     # if requires mp, check and deduct
     if 'mp_cost' in ability_dict[name].keys():
         if caster.stats["mp_current"] >= ability_dict[name]['mp_cost']:
@@ -19,11 +19,17 @@ def use_ability(name, target, caster, context, learning_rate=1):
             return "ability failed"
 
     # process damages
-    if 'power' in ability_dict[name].keys():
-        damage = math.floor((caster.stats["magic_base_atk"] + caster.stats["magic_boost"])
-                            * ability_dict[name]['power'] * random.uniform(0.90, 1.10))
-        target.stats["hp_current"] = math.floor(max(target.stats["hp_current"] - damage, 0))
-        # print contextual messages
+    melee_damage, magic_damage = 0, 0
+    if 'melee_power' in ability_dict[name].keys():
+        melee_damage = math.floor((caster.stats["melee_base_atk"] + caster.stats["melee_boost"])
+                                  * ability_dict[name]['melee_power'] * random.uniform(0.90, 1.10))
+    if 'magic_power' in ability_dict[name].keys():
+        magic_damage = math.floor((caster.stats["magic_base_atk"] + caster.stats["magic_boost"])
+                                  * ability_dict[name]['magic_power'] * random.uniform(0.90, 1.10))
+    damage = melee_damage + magic_damage
+    target.stats["hp_current"] = math.floor(max(target.stats["hp_current"] - damage, 0))
+    # print contextual messages
+    if 'melee_power' in ability_dict[name].keys() or 'magic_power' in ability_dict[name].keys():
         player_msg = f"{ability_dict[name]['msg1']} {str(damage)} points!"
         mob_msg = f"{ability_dict[name]['msg2']} {str(damage)} health."
         print(player_msg) if context == "hero's turn" else print(mob_msg)
@@ -46,39 +52,42 @@ def use_ability(name, target, caster, context, learning_rate=1):
 
     # allow ability to be learned
     if context == "mob's turn":
-        rngesus = random.randint(1, 10)
-        if name not in target.abilities and rngesus < learning_rate:
+        rngesus = random.uniform(0, 1)
+        if name not in target.abilities and rngesus < ability_dict[name]['learning_rate']:
             target.learn_ability(name)
 
 
-ability_dict = {'Strike':   {'power': 1,
-                             'msg1': f"You stike your foe for ",
-                             'msg2': f"You are struck hard for "},
+ability_dict = {'Strike':   {'melee_power': 1,
+                             'msg1': f"You stike your foe for",
+                             'msg2': f"You are struck hard for"},
                 'Combust':  {'mp_cost': 8,
-                             'power': 1,
+                             'magic_power': 1,
                              'recoil': 0.5,
-                             'msg1': f"You launch a chaotic volley of energy and damage your foe for ",
-                             'msg2': f"You are struck hard for "},
-                'Rush':     {'mp_cost': 0,
-                             'power': 1,
+                             'msg1': f"You launch a chaotic volley of energy and damage your foe for",
+                             'msg2': f"You are struck hard for"},
+                'Rush':     {'melee_power': 1,
                              'recoil': 0.1,
+                             'learning_rate': 0.80,
                              'msg1': f"You charge at your foe, ruthlessly dealing ",
                              'msg2': f"Enraged, the enemy rushes you! You lose "},
                 'Fire':     {'mp_cost': 6,
-                             'power': 1.15,
-                             'msg1': f"A flash of fire burns your foe for ",
+                             'magic_power': 1.15,
+                             'learning_rate': 0.60,
+                             'msg1': f"A flash of fire burns your foe for",
                              'msg2': f"You are struck by a wild flash of fire! You lose "},
                 'Fira':     {'mp_cost': 12,
-                             'power': 1.65,
-                             'msg1': f"You conjure a volley of fire at your foe for ",
+                             'magic_power': 1.65,
+                             'learning_rate': 0.40,
+                             'msg1': f"You conjure a volley of fire at your foe for",
                              'msg2': f"You are struck by a chaotic volley of fire! You lose "},
                 'Firaga':   {'mp_cost': 18,
-                             'power': 2.25,
-                             'msg1': f"Roiling fire surrounds your foe for ",
+                             'magic_power': 2.25,
+                             'learning_rate': 0.20,
+                             'msg1': f"Roiling fire surrounds your foe for",
                              'msg2': f"You are surrounded by an eruption of fire! You lose "},
                 'Heal':     {'mp_cost': 3,
                              'hp_gain': 0.1,
-                             'msg1': f"You cast Heal on yourself",
+                             'msg1': f"With Audro's blessing, you heal",
                              'msg2': f" "}}
 
 ability_order = ['Strike', 'Combust', 'Rush', 'Heal',

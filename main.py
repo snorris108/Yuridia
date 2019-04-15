@@ -348,7 +348,8 @@ def turn_start(mob, hero):
         turn_choice = input().lower()
         clear_console()
         if turn_choice in ['1', '2', '3', '4', '5', '6']:
-            if hero_turn(mob, hero, turn_choice) == 'dead':
+            hero_turn(mob, hero, turn_choice)
+            if mob_turn(mob, hero) == 'dead':
                 print('You step carefully over the corpse.')
                 break
         if turn_choice == 't':
@@ -396,7 +397,6 @@ def hero_turn(mob, hero, turn_choice):
     else:
         print("Ability slot is currently unassigned.")
         turn_start(mob, hero)
-    return mob_turn(mob, hero)
 
 
 def mob_turn(mob, hero):

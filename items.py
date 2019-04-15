@@ -84,6 +84,7 @@ list_of_ring = [k for k, v in gear_dict.items() if 'Ring' in v.stats['slot']]
 
 list_of_common_gear = [k for k, v in gear_dict.items() if v.tier == 1]
 
+
 consumables_dict = {'potion':   create_item('potion', 14, 1, 'heal', None, 0, 0, 0, 25, 0),
                     'ether':    create_item('ether', 14, 1, 'heal', None, 0, 0, 0, 0, 8),
                     'elixir':   create_item('elixir', 58, 2, 'heal', None, 0, 0, 0, 0, 48),
@@ -91,14 +92,15 @@ consumables_dict = {'potion':   create_item('potion', 14, 1, 'heal', None, 0, 0,
 
 list_of_consumables = [k for k, v in consumables_dict.items()]
 
+
 bait_dict = {'ilan_berries':    create_item('ilan berries', 2, 1, None, None, 0, 0, 0, 0, 0),
              'thread_worms':    create_item('thread worms', 2, 1, None, None, 0, 0, 0, 0, 0)}
 
 list_of_bait = [k for k, v in bait_dict.items()]
 
-items_dict = consumables_dict.update(bait_dict)
+items_dict = {**consumables_dict, **bait_dict}
 
-list_of_common_items = []
+list_of_common_items = [k for k, v in items_dict.items()]
 
 # herring = Item('herring', 1, 6)
 # salmon = Item('salmon', 1, 6)
