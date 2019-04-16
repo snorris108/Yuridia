@@ -392,16 +392,17 @@ class Mob:
         for gear in self.inventory:
             print(gear_dict[gear].name, "looted!")
             hero.inventory.append(gear_dict[gear])
-        for item in self.loot:
-            chance = random.uniform(0, 1)
-            if chance > 0.95:
-                if item not in hero.inventory:
-                    hero.inventory.append(item)
-                quantity_looted = 1
-                if isinstance(item, Item):
-                    quantity_looted = random.randint(8, 12)
-                item.quantity += quantity_looted
-                print(f"You have looted {quantity_looted} {item.name}.")
+        for _list in self.loot:
+            for item in _list:
+                chance = random.uniform(0, 1)
+                if chance > 0.95:
+                    if item not in hero.inventory:
+                        hero.inventory.append(item)
+                    quantity_looted = 1
+                    if isinstance(item, Item):
+                        quantity_looted = random.randint(8, 12)
+                    item.quantity += quantity_looted
+                    print(f"You have looted {quantity_looted} {item.name}.")
 
     def death(self, hero):
         hero.stats['xp'] += self.stats['xp_worth']
@@ -409,11 +410,11 @@ class Mob:
         self.plunder(hero)
         if hero.stats['xp'] > hero.stats['next_level_at']:
             hero.level_up()
-        del self
 
 
 def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_regen, melee_base_atk, melee_boost,
                melee_affinity, magic_base_atk, magic_boost, magic_affinity, level, xp_worth, loot, abilities):
+    print("calling create_mob")
     return Mob({'race': race,
                 'hp_current': hp_current,
                 'hp_base': hp_base,
@@ -436,10 +437,10 @@ mob_dict = {'thief':        create_mob('thief', 200, 200, 0, 10, 10, 0, 14, 0, 0
                                        [list_of_common_items, list_of_bait],
                                        {'Fire', 'Heal', 'Rush'}),
             'kaelas_boar':  create_mob('Kaelas boar', 60, 60, 0, 4, 4, 0, 24, 0, 0.7, 4, 0, 0.2, 1, 8,
-                                       list_of_common_items,
+                                       [list_of_common_items],
                                        {'Heal', 'Rush'}),
             'wolves':       create_mob('pack of wolves', 300, 300, 0, 10, 10, 0, 7, 0, 0.7, 0, 0, 0.2, 1, 14,
-                                       list_of_common_items,
+                                       [list_of_common_items],
                                        {'Strike'}),
             'cultist':      create_mob('cultist', 200, 200, 10, 100, 100, 4, 8, 0, 0.7, 38, 0, 0.2, 1, 46,
                                        [list_of_common_items, list_of_bait],
@@ -476,7 +477,7 @@ def player():
                  'Ring': ''})
 
 
-list_of_mobs = [k for k, v in mob_dict.items()]
+list_of_mobs = [k for k in mob_dict.keys()]
 
 
 def giant_kitty():

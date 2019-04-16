@@ -357,6 +357,7 @@ def turn_start(mob):
             print('You punish your foe.')
             # Runs mob death and checks for hero level up.
             mob.death(hero)
+            del mob
             break
         elif turn_choice == 'o':
             options('combat')
@@ -425,6 +426,7 @@ def mob_turn(mob):
                 use_ability('Rush', hero, mob, context)
                 if mob.stats['hp_current'] <= 0:
                     mob.death(hero)
+                    del mob
                     return 'dead'
 
             elif 'Strike' in mob.abilities:
@@ -446,6 +448,7 @@ def mob_turn(mob):
     else:
         combat_template(mob)
         mob.death(hero)
+        del mob
         return 'dead'
 
 
