@@ -185,7 +185,7 @@ def enter_village(context):
         elif playing == 'u':
             hero.unequip_direct()
         elif playing == 'a':
-            hero.view_abilities()
+            hero.ability_to_bar()
         elif playing == 'c':
             hero.consumables()
         elif playing == 'o':
@@ -356,7 +356,6 @@ def turn_start(mob, hero):
             print('You punish your foe.')
             # Runs mob death and checks for hero level up.
             mob.death(hero)
-            check_surroundings()
             break
         elif turn_choice == 'o':
             options('combat')
@@ -365,7 +364,7 @@ def turn_start(mob, hero):
         elif turn_choice == 'i':
             hero.view_inventory()
         elif turn_choice == 'a':
-            hero.view_abilities()
+            hero.ability_to_bar()
             combat_template(mob, hero)
         elif turn_choice == 'w':
             mob_turn(mob, hero)
@@ -489,10 +488,10 @@ def chest():
     count = 0
 
     if choice == 'y':
-        for i in list_of_common_items:
+        for item in list_of_common_items:
             rngesus = random.randint(1, 100)
             if rngesus < 20 and count < 5:
-                chest_looting(items_dict[i])
+                chest_looting(item)
                 looted_item = True
                 count += 1
         for i in list_of_common_gear:
@@ -514,18 +513,14 @@ def chest_looting(item):
     individually.
     :param item: function that returns instance of item/gear
     """
-    if item not in hero.inventory:
+    if isinstance(item, Gear):
         hero.inventory.append(item)
-
-    num_rolled = random.randrange(1, 4)
-    item.quantity += num_rolled
-
-    if num_rolled == 1:
-        plural = 'it'
+        print(f"You find a {item.name} and add it to your pack.")
     else:
-        plural = 'them'
-    print("You find ", num_rolled, ' ', item.name, ", and add ", plural, " to your pack.",
-          sep='')
+        num_rolled = random.randrange(1, 4)
+        item.quantity += num_rolled
+        plural = 'it' if num_rolled == 1 else 'them'
+        print(f"You find {num_rolled} {item.name} and add {plural} to your pack.")
 
 
 def move():  # should this be a class method?
@@ -600,7 +595,7 @@ def main():
         elif playing == 'u':
             hero.unequip_direct()
         elif playing == 'a':
-            hero.view_abilities()
+            hero.ability_to_bar()
         elif playing == 'c':
             hero.consumables()
         elif playing == 'm':
