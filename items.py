@@ -14,11 +14,11 @@ class Gear:
         self.magic_boost_scalar = 1 * random.choice([0.5, 0.75, 1])
         self.hp_regen_scalar = 1 * random.choice([0.5, 0.75, 1])
         self.mp_regen_scalar = 1 * random.choice([0.5, 0.75, 1])
-        self.melee_boost = melee_boost
-        self.magic_boost = magic_boost
+        self.melee_boost = melee_boost * self.melee_boost_scalar
+        self.magic_boost = magic_boost * self.magic_boost_scalar
         self.poison_boost = poison_boost
-        self.hp_regen = hp_regen
-        self.mp_regen = mp_regen
+        self.hp_regen = hp_regen * self.hp_regen_scalar
+        self.mp_regen = mp_regen * self.mp_regen_scalar
         self.durability = 100 * random.choice([0.5, 0.75, 1])
         self.default_name = name
 
@@ -79,6 +79,20 @@ gear_dict = {'small_dagger':    Gear('small dagger', 10, 1, 'melee', ['Mainhand'
              'crooked_staff':   Gear('crooked staff', 24, 1, 'magic', ['Mainhand', 'Offhand'],
                                             0, 15, 0, 0, 4)}
 
+potion = Consumable('potion', 14, 100, 0, 0, 0, 0)
+ether = Consumable('ether', 21, 0, 18, 0, 0, 0)
+elixir = Consumable('elixir', 58, 0, 48, 0, 0, 0)
+beer = Consumable('beer', 12, 45, 18, 0, 0, 100)
+
+ilan_berries = Item('ilan berries', 4, 'bait')
+thread_worms = Item('thread worms', 4, 'bait')
+
+# herring = Item('herring', 1, 6)
+# salmon = Item('salmon', 1, 6)
+#
+# logs = Item('logs', 1, 2)
+# worn_hatchet = Tool('worn hatchet', 1, 4, 20)
+
 list_of_mainhand = [k for k, v in gear_dict.items() if 'Mainhand' in v.slot]
 list_of_offhand = [k for k, v in gear_dict.items() if 'Offhand' in v.slot]
 list_of_head = [k for k, v in gear_dict.items() if 'Head' in v.slot]
@@ -89,27 +103,8 @@ list_of_feet = [k for k, v in gear_dict.items() if 'Feet' in v.slot]
 list_of_ring = [k for k, v in gear_dict.items() if 'Ring' in v.slot]
 
 list_of_common_gear = [k for k, v in gear_dict.items() if v.tier == 1]
-
-
-potion = Consumable('potion', 14, 100, 0, 0, 0, 0)
-ether = Consumable('ether', 21, 0, 18, 0, 0, 0)
-elixir = Consumable('elixir', 58, 0, 48, 0, 0, 0)
-beer = Consumable('beer', 12, 45, 18, 0, 0, 100)
-
 list_of_consumables = [potion, ether, elixir, beer]
-
-
-ilan_berries = Item('ilan berries', 4, 'bait')
-thread_worms = Item('thread worms', 4, 'bait')
-
 list_of_bait = [ilan_berries, thread_worms]
-
 list_of_common_items = []
 list_of_common_items.extend(list_of_consumables)
 list_of_common_items.extend(list_of_bait)
-
-# herring = Item('herring', 1, 6)
-# salmon = Item('salmon', 1, 6)
-#
-# logs = Item('logs', 1, 2)
-# worn_hatchet = Tool('worn hatchet', 1, 4, 20)

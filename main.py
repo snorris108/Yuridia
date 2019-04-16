@@ -84,7 +84,7 @@ def check_surroundings():
 
 
 # def fishing():
-#     list = hero.item_selection(Bait, '')
+#     list = hero.get_item_list(Bait, '')
 #     if list:
 #         bait = ''
 #         fish = ''
@@ -285,7 +285,8 @@ def shop(context):
 
 
 def selling(context):
-    list = hero.item_selection(Gear, "weaponsmith")  # [ obj, (list item 1, 2, 3, etc...) ]
+    list = hero.get_item_list(Gear, "weaponsmith")  # [ obj, (list item 1, 2, 3, etc...) ]
+
     if list:
         choice = input("What would you like to sell?  [B] Back\n")
         choice = choice.lower()
@@ -325,31 +326,31 @@ def event_roll():
     rngesus = random.randint(1, 100)
 
     if rngesus > 75 and hero.dist > 100:
-        encounter(random.choice(list_of_bosses), hero)
+        encounter(random.choice(list_of_bosses))
     elif rngesus > 30:
-        encounter(mob_dict[random.choice(list_of_mobs)], hero)
+        encounter(mob_dict[random.choice(list_of_mobs)])
     elif rngesus > 10:
         print("You walk through a field.\nNothing interesting happens.")
     else:
         chest()
 
 
-def encounter(mob, hero):
+def encounter(mob):
     # Initiates first turn of combat and the encounter's loop.
     print(f"You encounter a {mob.stats['race']}!")
     mob.equip()
-    combat_template(mob, hero)
-    turn_start(mob, hero)
+    combat_template(mob)
+    turn_start(mob)
 
 
-def turn_start(mob, hero):
+def turn_start(mob):
     while mob.stats['hp_current'] > 0 and hero.stats['hp_current'] > 0:
         hero.display_ability_bar()
         turn_choice = input().lower()
         clear_console()
         if turn_choice in ['1', '2', '3', '4', '5', '6']:
             hero_turn(mob, hero, turn_choice)
-            if mob_turn(mob, hero) == 'dead':
+            if mob_turn(mob) == 'dead':
                 print('You step carefully over the corpse.')
                 break
         if turn_choice == 't':
@@ -365,9 +366,9 @@ def turn_start(mob, hero):
             hero.view_inventory()
         elif turn_choice == 'a':
             hero.ability_to_bar()
-            combat_template(mob, hero)
+            combat_template(mob)
         elif turn_choice == 'w':
-            mob_turn(mob, hero)
+            mob_turn(mob)
         elif turn_choice == 'r':
             roll = random.randint(1, 100)
             if roll > 50:
@@ -375,7 +376,7 @@ def turn_start(mob, hero):
                 break
             else:
                 print("You fail to escape.")
-                mob_turn(mob, hero)
+                mob_turn(mob)
         elif turn_choice == 'xp':
             print("xp worth: ", mob.stats['xp_worth'])
     if hero.stats['hp_current'] <= 0:
@@ -392,13 +393,13 @@ def hero_turn(mob, hero, turn_choice):
     if hero.ability_bar[turn_choice]:
         state = use_ability(hero.ability_bar[turn_choice], mob, hero, context)
         if state == "ability failed":
-            turn_start(mob, hero)
+            turn_start(mob)
     else:
         print("Ability slot is currently unassigned.")
-        turn_start(mob, hero)
+        turn_start(mob)
 
 
-def mob_turn(mob, hero):
+def mob_turn(mob):
     """
     Handles the mob's turn of combat, assuming the mob still has hp remaining from your attack.
     :return: 'dead' flag if mob has been killed to signal end of combat.
@@ -441,14 +442,14 @@ def mob_turn(mob, hero):
                 mob_basic_atk(mob, hero)
         else:
             mob_basic_atk(mob, hero)
-        combat_template(mob, hero)
+        combat_template(mob)
     else:
-        combat_template(mob, hero)
+        combat_template(mob)
         mob.death(hero)
         return 'dead'
 
 
-def combat_template(mob, hero):
+def combat_template(mob):
     """Draws the combat 'window' """
     bar_len = 20
     mob_hp_bar = int((1 - ((mob.stats['hp_base'] - mob.stats['hp_current']) / mob.stats['hp_base'])) * bar_len)
@@ -466,7 +467,7 @@ def combat_template(mob, hero):
     if mob.stats['magic_boost'] != 0:
         magic_boost_fmt = f"( +{str(int(mob.stats['magic_boost']))})"
     print('-' * 60,
-          f"\n{mob.stats['race']:^22}{'':16}{hero.stats['race']:^22}",
+          f"\n{mob.stats['race']:^22}{'':16}{hero.name:^22}",
           f"\n{'['}{'+' * mob_hp_bar:20}{']'}{'Health':^16}{'['}{'+' * hero_hp_bar:20}{']'}",
           f"\n{mp_regen_fmt:>10}{mob.stats['mp_current']:>11}{'Mana':^16}{hero.stats['mp_current']:<20}",
           f"\n{melee_boost_fmt:>10}{mob.stats['melee_base_atk']:>11}{'Attack':^16}"
@@ -617,7 +618,7 @@ def main():
                 if hero.stats['mp_current'] >= 3:
                     Heal(x, hero, "hero's turn")
         elif playing == 't':
-            encounter(kraken(), hero)
+            encounter(kraken())
         elif playing == 'x':
             chest()
         elif playing == 'stats':
