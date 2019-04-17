@@ -84,7 +84,7 @@ def check_surroundings():
 
 
 # def fishing():
-#     list = hero.get_item_list(Bait, '')
+#     list = hero.get_list_of_all(Bait, '')
 #     if list:
 #         bait = ''
 #         fish = ''
@@ -177,17 +177,17 @@ def enter_village(context):
         # elif playing == 'r':
         #     inn()
         elif playing == 's':
-            hero.character_sheet()
+            hero.display_character_sheet()
         elif playing == 'i':
-            hero.view_inventory()
+            hero.display_inventory()
         elif playing == 'e':
             hero.equip()
         elif playing == 'u':
-            hero.unequip_direct()
+            hero.unequip()
         elif playing == 'a':
             hero.ability_to_bar()
         elif playing == 'c':
-            hero.consumables()
+            hero.chug()
         elif playing == 'o':
             options("village")
         options('village')
@@ -278,14 +278,14 @@ def shop(context):
     if choice == 's':
         selling(context)
     elif choice == 'i':
-        hero.view_inventory()
+        hero.display_inventory()
     if choice == 'l':
         print("You turn and step back into the main thoroughfare.")
         # in_village()
 
 
 def selling(context):
-    list = hero.get_item_list(Gear, "weaponsmith")  # [ obj, (list item 1, 2, 3, etc...) ]
+    list = hero.get_list_of_all(Gear, "weaponsmith")  # [ obj, (list item 1, 2, 3, etc...) ]
 
     if list:
         choice = input("What would you like to sell?  [B] Back\n")
@@ -313,7 +313,7 @@ def selling(context):
             elif choice == 'b':
                 shop(context)
             elif choice == 'i':
-                hero.view_inventory()
+                hero.display_inventory()
                 shop(context)
 
     else:
@@ -361,9 +361,9 @@ def turn_start(mob):
         elif turn_choice == 'o':
             options('combat')
         elif turn_choice == 'c':
-            hero.consumables()
+            hero.chug()
         elif turn_choice == 'i':
-            hero.view_inventory()
+            hero.display_inventory()
         elif turn_choice == 'a':
             hero.ability_to_bar()
             combat_template(mob)
@@ -382,7 +382,7 @@ def turn_start(mob):
     if hero.stats['hp_current'] <= 0:
         print("You've been put to rest.")
         print("Final stats:")
-        hero.character_sheet()
+        hero.display_character_sheet()
         main()
     hero.stats['mp_current'] += 1
 
@@ -491,7 +491,7 @@ def chest():
     if choice == 'y':
         for item in list_of_common_items:
             rngesus = random.randint(1, 100)
-            if rngesus < 15 and count < 5:
+            if rngesus < 150 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
@@ -519,6 +519,8 @@ def chest_looting(item):
         print(f"You find a {item.name} and add it to your pack.")
     else:
         num_rolled = random.randrange(1, 4)
+        if item not in hero.inventory:
+            hero.inventory.append(item)
         item.quantity += num_rolled
         plural = 'it' if num_rolled == 1 else 'them'
         print(f"You find {num_rolled} {item.name} and add {plural} to your pack.")
@@ -586,19 +588,19 @@ def main():
         playing = input().lower()
         clear_console()
         if playing == 's':
-            hero.character_sheet()
+            hero.display_character_sheet()
         # elif playing == 'list':
         # print("xp: ", hero.stats.xp, "level: ", hero.stats.level)
         elif playing == 'i':
-            hero.view_inventory()
+            hero.display_inventory()
         elif playing == 'e':
             hero.equip()
         elif playing == 'u':
-            hero.unequip_direct()
+            hero.unequip()
         elif playing == 'a':
             hero.ability_to_bar()
         elif playing == 'c':
-            hero.consumables()
+            hero.chug()
         elif playing == 'm':
             move()
             event_roll()
@@ -618,7 +620,7 @@ def main():
                 if hero.stats['mp_current'] >= 3:
                     Heal(x, hero, "hero's turn")
         elif playing == 't':
-            encounter(kraken())
+            encounter(create_mob(*kraken))
         elif playing == 'x':
             chest()
         elif playing == 'stats':
