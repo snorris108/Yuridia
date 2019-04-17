@@ -362,19 +362,19 @@ class Mob:
         self.inventory = []
 
     def equip(self):
-        chance = {i: random.randint(1, 10) for i in range(1, 9)}
-        pack = {1: random.choice(list_of_mainhand),
-                2: random.choice(list_of_offhand),
-                3: random.choice(list_of_head),
-                4: random.choice(list_of_body),
-                5: random.choice(list_of_legs),
-                6: random.choice(list_of_feet),
-                7: random.choice(list_of_hands),
-                8: random.choice(list_of_ring)}
+        chance = {i: random.uniform(0, 1) for i in range(1, 9)}
+        pack = {1: Gear(*random.choice([i for i in list_of_gear if 'Mainhand' in i[4]])),
+                2: Gear(*random.choice([i for i in list_of_gear if 'Offhand' in i[4]])),
+                3: Gear(*random.choice([i for i in list_of_gear if 'Head' in i[4]])),
+                4: Gear(*random.choice([i for i in list_of_gear if 'Body' in i[4]])),
+                5: Gear(*random.choice([i for i in list_of_gear if 'Legs' in i[4]])),
+                6: Gear(*random.choice([i for i in list_of_gear if 'Hands' in i[4]])),
+                7: Gear(*random.choice([i for i in list_of_gear if 'Feet' in i[4]])),
+                8: Gear(*random.choice([i for i in list_of_gear if 'Ring' in i[4]]))}
         for index, odds in chance.items():
-            if odds < 2:
+            if odds < 0.2:
                 self.inventory.append(pack[index])
-                self.equipping(gear_dict[pack[index]])
+                self.equipping(pack[index])
 
     def equipping(self, equipping_obj):
         self.stats['melee_boost'] += equipping_obj.melee_boost
@@ -390,8 +390,8 @@ class Mob:
 
     def plunder(self, hero):
         for gear in self.inventory:
-            print(gear_dict[gear].name, "looted!")
-            hero.inventory.append(gear_dict[gear])
+            print(gear.name, "looted!")
+            hero.inventory.append(gear)
         for _list in self.loot:
             for item in _list:
                 chance = random.uniform(0, 1)

@@ -349,13 +349,12 @@ def turn_start(mob):
         turn_choice = input().lower()
         clear_console()
         if turn_choice in ['1', '2', '3', '4', '5', '6']:
-            hero_turn(mob, hero, turn_choice)
+            hero_turn(mob, turn_choice)
             if mob_turn(mob) == 'dead':
                 print('You step carefully over the corpse.')
                 break
-        if turn_choice == 't':
+        elif turn_choice == 't':
             print('You punish your foe.')
-            # Runs mob death and checks for hero level up.
             mob.death(hero)
             del mob
             break
@@ -384,12 +383,11 @@ def turn_start(mob):
         print("You've been put to rest.")
         print("Final stats:")
         hero.character_sheet()
-        intro()
-    # mob.inventory = []
+        main()
     hero.stats['mp_current'] += 1
 
 
-def hero_turn(mob, hero, turn_choice):
+def hero_turn(mob, turn_choice):
     context = "hero's turn"
     if hero.ability_bar[turn_choice]:
         state = use_ability(hero.ability_bar[turn_choice], mob, hero, context)
@@ -488,24 +486,23 @@ def chest():
     """
     choice = input("You find a small treasure!\nDo you wish to loot it? (Y or N)\n").lower()
     looted_item = False
-    looted_gear = False
     count = 0
 
     if choice == 'y':
         for item in list_of_common_items:
             rngesus = random.randint(1, 100)
-            if rngesus < 20 and count < 5:
+            if rngesus < 15 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
-        for i in list_of_common_gear:
+# It'd be interesting to find gear tiered in a range around your level, so tier 1 items eventually don't drop
             rngesus = random.randint(1, 100)
             if rngesus < 10 and count < 5:
-                chest_looting(gear_dict[i])
-                looted_gear = True
+                chest_looting(Gear(*random.choice(list_of_gear)))
+                looted_item = True
                 count += 1
 
-        if not looted_item and not looted_gear:
+        if not looted_item:
             print("You find nothing of value.")
     else:
         print("You leave it.")
