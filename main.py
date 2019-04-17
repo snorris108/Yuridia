@@ -326,9 +326,9 @@ def event_roll():
     rngesus = random.randint(1, 100)
 
     if rngesus > 75 and hero.dist > 100:
-        encounter(random.choice(list_of_bosses))
+        encounter(create_mob(*random.choice(list_of_bosses)))
     elif rngesus > 30:
-        encounter(mob_dict[random.choice(list_of_mobs)])
+        encounter(create_mob(*random.choice(list_of_mobs)))
     elif rngesus > 10:
         print("You walk through a field.\nNothing interesting happens.")
     else:

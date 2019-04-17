@@ -64,8 +64,8 @@ class Char:
               '\n', f"{'M. Attack: ':8}{self.stats['magic_base_atk']}", sep='')
 
     def view_inventory(self):
-        gold_padding = ' ' * (60 - 10 - 7 - len(self.name) - len(str(self.gold)))
-        print(f"{'Inventory: '}{gold_padding}{'Gold: ':>}{self.gold:>}",
+        gold_padding = ' ' * (60 - 16 - len(str(self.gold)))
+        print(f"{'Inventory: '}{gold_padding}{'Gold: '}{self.gold}",
               '\n', '----+' * 12, sep='')
         for item in self.inventory:
             if isinstance(item, Gear):
@@ -96,7 +96,7 @@ class Char:
             melee_boost_fmt = f"{' (+'}{str(int(self.stats['melee_boost']))}{')'}"
         if self.stats['magic_boost'] != 0:
             magic_boost_fmt = f"{' (+'}{str(int(self.stats['magic_boost']))}{')'}"
-        gold_padding = ' ' * (60 - 17 - len(self.name) - len(str(self.gold)))
+        gold_padding = ' ' * (60 - 17 - 6 - len(self.name) - len(str(self.gold)))
         
         print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{self.gold:>}",
               '\n',
@@ -294,8 +294,8 @@ class Char:
     def get_item_list(self, class_type, context):
         item_list = []
         if context == "unequipping":
-            for v in self.equipment.values():
-                item_list.append(v)
+            for gear in self.equipment.values():
+                item_list.append(gear)
         elif context == "weaponsmith":
             for item in self.inventory:
                 if isinstance(item, class_type):
@@ -372,7 +372,7 @@ class Mob:
                 7: Gear(*random.choice([i for i in list_of_gear if 'Feet' in i[4]])),
                 8: Gear(*random.choice([i for i in list_of_gear if 'Ring' in i[4]]))}
         for index, odds in chance.items():
-            if odds < 0.2:
+            if odds < 0.1:
                 self.inventory.append(pack[index])
                 self.equipping(pack[index])
 
@@ -414,7 +414,6 @@ class Mob:
 
 def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_regen, melee_base_atk, melee_boost,
                melee_affinity, magic_base_atk, magic_boost, magic_affinity, level, xp_worth, loot, abilities):
-    print("calling create_mob")
     return Mob({'race': race,
                 'hp_current': hp_current,
                 'hp_base': hp_base,
@@ -431,21 +430,6 @@ def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_rege
                 'level': level,
                 'xp_worth': xp_worth},
                loot, abilities)
-
-
-mob_dict = {'thief':        create_mob('thief', 200, 200, 0, 10, 10, 0, 14, 0, 0.7, 8, 0, 0.2, 1, 12,
-                                       [list_of_common_items, list_of_bait],
-                                       {'Fire', 'Heal', 'Rush'}),
-            'kaelas_boar':  create_mob('Kaelas boar', 60, 60, 0, 4, 4, 0, 24, 0, 0.7, 4, 0, 0.2, 1, 8,
-                                       [list_of_common_items],
-                                       {'Heal', 'Rush'}),
-            'wolves':       create_mob('pack of wolves', 300, 300, 0, 10, 10, 0, 7, 0, 0.7, 0, 0, 0.2, 1, 14,
-                                       [list_of_common_items],
-                                       {'Strike'}),
-            'cultist':      create_mob('cultist', 200, 200, 10, 100, 100, 4, 8, 0, 0.7, 38, 0, 0.2, 1, 46,
-                                       [list_of_common_items, list_of_bait],
-                                       {'Fire', 'Fira', 'Firaga', 'Heal', 'Rush'}),
-            }
 
 
 def player():
@@ -477,47 +461,29 @@ def player():
                  'Ring': ''})
 
 
-list_of_mobs = [k for k in mob_dict.keys()]
+thief = \
+    ['thief',               200, 200, 0, 10, 10, 0, 14, 0, 0.7, 8, 0, 0.2, 1, 12,
+     [list_of_common_items, list_of_bait],
+     {'Fire', 'Heal', 'Rush'}]
+kaelas_boar = \
+    ['Kaelas boar',         60, 60, 0, 4, 4, 0, 24, 0, 0.7, 4, 0, 0.2, 1, 8,
+     [list_of_common_items],
+     {'Heal', 'Rush'}]
+wolves = \
+    ['pack of wolves',      300, 300, 0, 10, 10, 0, 7, 0, 0.7, 0, 0, 0.2, 1, 14,
+     [list_of_common_items],
+     {'Strike'}]
+cultist = \
+    ['cultist',             200, 200, 10, 100, 100, 4, 8, 0, 0.7, 38, 0, 0.2, 1, 46,
+     [list_of_common_items, list_of_bait],
+     {'Fire', 'Fira', 'Firaga', 'Heal', 'Rush'}]
+giant_kitty = \
+    ['giant... kitty?',     3000, 3000, 0, 10, 10, 0, 75, 0, 0.7, 85, 0, 0.2, 1, 666,
+     [list_of_common_items],
+     {'Heal', 'Firaga'}]
+kraken = ['Kraken',         5000, 5000, 0, 79, 79, 4, 72, 0, 0.35, 68, 0, 0.65, 1, 1247,
+          [list_of_common_items],
+          {'Fira', 'Firaga'}]
 
-
-def giant_kitty():
-    return Mob({'race': 'giant....kitty?',
-                'hp_current': 3000,
-                'hp_base': 3000,
-                'hp_regen': 0,
-                'mp_current': 10,
-                'mp_base': 10,
-                'mp_regen': 0,
-                'melee_base_atk': 75,
-                'melee_boost': 0,
-                'melee_affinity': 0.7,
-                'magic_base_atk': 85,
-                'magic_boost': 0,
-                'magic_affinity': 0.2,
-                'level': 1,
-                'xp_worth': 666},
-               [list_of_common_items],
-               {'Heal', 'Firaga'})
-
-
-def kraken():
-    return Mob({'race': 'Kraken',
-                'hp_current': 5000,
-                'hp_base': 5000,
-                'hp_regen': 0,
-                'mp_current': 79,
-                'mp_base': 79,
-                'mp_regen': 4,
-                'melee_base_atk': 72,
-                'melee_boost': 0,
-                'melee_affinity': 0.35,
-                'magic_base_atk': 68,
-                'magic_boost': 0,
-                'magic_affinity': 0.65,
-                'level': 1,
-                'xp_worth': 1247},
-               [list_of_common_items],
-               {'Fira', 'Firaga'})
-
-
+list_of_mobs = [thief, kaelas_boar, wolves, cultist]
 list_of_bosses = [giant_kitty, kraken]
