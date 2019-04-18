@@ -136,14 +136,12 @@ def options(context):
               '\n', f"{'[S]':^20}{'[I]':^20}{'[E]':^20}",
               '\n', f"{'Character Sheet':^20}{'Inventory':^20}{'Equipment':^20}",
               '\n', f"{'[A]':^20}{'[C]':^20}{'[H]':^20}",
-              '\n', f"{'Abilities':^20}{'Consumables':^20}{'Heal':^20}",
+              '\n', f"{'Abilities':^20}{'Consumables':^20}{'Cast Heal':^20}",
               '\n', '-' * 60, sep='')
     elif context == 'combat':
-        print('\nOptions: ',
-              '\n', '-' * 60,
-              '\n', f"{'[C]':^20}{'[I]':^20}{'[W]':^20}{'[R]':^20}",
-              '\n', f"{'Consumables':^20}{'Inventory':^20}{'Wait':^20}{'Run Away':^20}",
-              '\n', '-' * 60, sep='')
+        print(f"\n{'[C]':^15}{'[I]':^15}{'[W]':^15}{'[R]':^15}",
+              '\n', f"{'Consumables':^15}{'Inventory':^15}{'Wait':^15}{'Run Away':^15}",
+              '\n', '-' * 60,sep='')
     elif context == 'village':
         print('\nOptions: ',
               '\n', '-' * 60,
@@ -192,7 +190,7 @@ def enter_village(context):
             options("village")
         options('village')
         playing = input().lower()
-    # check_surroundings()
+    clear_console()
 
 
 def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
@@ -270,18 +268,82 @@ def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
 
 
 def shop(context):
-    print("[B] Buy  |  [S] Sell  |  [L] Leave")
-    choice = input().lower()
-    clear_console()
-    # if choice == 'b':
-        # buying(context)
-    if choice == 's':
-        selling(context)
-    elif choice == 'i':
-        hero.display_inventory()
-    if choice == 'l':
-        print("You turn and step back into the main thoroughfare.")
-        # in_village()
+    choice = ''
+    while choice != 'l':
+        print(f"\n{'Options:'}",
+              '\n', '-' * 60,
+              '\n', f"{'[]':^20}{'[]':^20}{'[L]':^20}",
+              '\n', f"{'Buy':^20}{'Sell':^20}{'Leave':^20}",
+              '\n', f"{'[]':^20}{'[E]':^20}",
+              '\n', f"{'Repair':^20}{'Enhance':^20}")
+        choice = input().lower()
+        clear_console()
+        # if choice == 'b':
+            # buying(context)
+        if choice == 's':
+            selling(context)
+        elif choice == 'r':
+            enhance(context)
+        elif choice == 'e':
+            enhance('weaponsmith')
+        elif choice == 'l':
+            print("You turn and step back into the main thoroughfare.")
+        elif choice == 'i':
+            hero.display_inventory()
+
+
+def enhance(context):
+    # DISPLAY
+    gear_list = hero.get_list_of_all(Gear, 'enhance')
+    if gear_list:
+        print('-' * 60)
+        if hero.display_item_list(Gear, ['weaponsmith', 'enhance'], gear_list):
+            print('-' * 60)
+            choice = input("What would you like enhanced?  (O indicates enhancement available)\n")
+            # SELECTION
+            for index, item in enumerate(gear_list):
+                if choice == str(index + 1):
+                    print("Sure, hon. I can enhance the following on that;")
+                    hotkey, d = 1, {}
+                    if item.melee_boost_scalar != 1:
+                        print(f"[{hotkey}] melee power")
+                        d[hotkey] = 'melee'
+                        hotkey += 1
+                    if item.magic_boost_scalar != 1:
+                        print(f"[{hotkey}] magic power")
+                        d[hotkey] = 'magic'
+                        hotkey += 1
+                    if item.hp_regen_scalar != 1:
+                        print(f"[{hotkey}] health regen")
+                        d[hotkey] = 'hp_regen'
+                        hotkey += 1
+                    if item.mp_regen_scalar != 1:
+                        print(f"[{hotkey}] mana regen")
+                        d[hotkey] = 'mp_regen'
+                    choice = input()
+                    for k, v in d.items():
+                        if choice == str(k):
+                            if v == 'melee':
+                                item.melee_boost_scalar += 0.25
+                                item.melee_boost = item.init_melee * item.melee_boost_scalar
+                            elif v == 'magic':
+                                item.magic_boost_scalar += 0.25
+                                item.magic_boost = item.init_magic * item.magic_boost_scalar
+                            elif v == 'hp_regen':
+                                item.hp_regen_scalar += 0.25
+                                item.hp_regen = item.init_melee * item.hp_regen_scalar
+                            elif v == 'mp_regen':
+                                item.melee_boost_scalar += 0.25
+                                item.melee_boost = item.init_melee * item.melee_boost_scalar
+                            print("You're all set.")
+                            print(item.melee_boost_scalar, item.magic_boost_scalar, item.hp_regen_scalar)
+                            break
+    else:
+        print("You've got nothing that needs my touch.")
+
+
+def repair(context):
+    pass
 
 
 def selling(context):
@@ -346,6 +408,7 @@ def encounter(mob):
 def turn_start(mob):
     while mob.stats['hp_current'] > 0 and hero.stats['hp_current'] > 0:
         hero.display_ability_bar()
+        options('combat')
         turn_choice = input().lower()
         clear_console()
         if turn_choice in ['1', '2', '3', '4', '5', '6']:
@@ -491,16 +554,17 @@ def chest():
     if choice == 'y':
         for item in list_of_common_items:
             rngesus = random.randint(1, 100)
-            if rngesus < 150 and count < 5:
+            if rngesus < 15 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
 # It'd be interesting to find gear tiered in a range around your level, so tier 1 items eventually don't drop
-            rngesus = random.randint(1, 100)
-            if rngesus < 10 and count < 5:
-                chest_looting(Gear(*random.choice(list_of_gear)))
-                looted_item = True
-                count += 1
+            if hero.stats['burden_current'] < hero.stats['burden_limit']:
+                rngesus = random.randint(1, 100)
+                if rngesus < 10 and count < 5:
+                    chest_looting(Gear(*random.choice(list_of_gear)))
+                    looted_item = True
+                    count += 1
 
         if not looted_item:
             print("You find nothing of value.")
@@ -515,8 +579,10 @@ def chest_looting(item):
     :param item: function that returns instance of item/gear
     """
     if isinstance(item, Gear):
-        hero.inventory.append(item)
-        print(f"You find a {item.name} and add it to your pack.")
+        if hero.stats['burden_current'] < hero.stats['burden_limit']:
+            hero.inventory.append(item)
+            hero.stats['burden_current'] += item.burden
+            print(f"You find a {item.name} and add it to your pack.")
     else:
         num_rolled = random.randrange(1, 4)
         if item not in hero.inventory:
