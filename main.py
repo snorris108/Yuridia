@@ -55,7 +55,7 @@ def save_game():
 
 
 def clear_console():
-    print('\n' * 80)
+    print('\n' * 40)
 
 
 def check_surroundings():
@@ -124,73 +124,6 @@ def check_surroundings():
 #             print(bait.quantity, ' ', bait.name)
 #     else:
 #         print("You have no bait.")
-
-
-def options(context):
-    if context == 'check surroundings':
-        padding = ' ' * (60 - 8 - len(hero.view_location()))
-        print(f"\n{'Options:'}{padding}{hero.view_location()}",
-              '\n', '-' * 60,
-              '\n', f"{'[Enter]':^20}{'':^20}{'[=]':^20}",
-              '\n', f"{'Check surroundings':^20}{'':^20}{'Save progress':^20}",
-              '\n', f"{'[S]':^20}{'[I]':^20}{'[E]':^20}",
-              '\n', f"{'Character Sheet':^20}{'Inventory':^20}{'Equipment':^20}",
-              '\n', f"{'[A]':^20}{'[C]':^20}{'[H]':^20}",
-              '\n', f"{'Abilities':^20}{'Consumables':^20}{'Cast Heal':^20}",
-              '\n', '-' * 60, sep='')
-    elif context == 'combat':
-        print(f"\n{'[C]':^15}{'[I]':^15}{'[W]':^15}{'[R]':^15}",
-              '\n', f"{'Consumables':^15}{'Inventory':^15}{'Wait':^15}{'Run Away':^15}",
-              '\n', '-' * 60,sep='')
-    elif context == 'village':
-        print('\nOptions: ',
-              '\n', '-' * 60,
-              '\n', f"{'[W]':^20}{'[A]':^20}{'[P]':^20}",
-              '\n', f"{'Weaponsmith':^20}{'Armorsmith':^20}{'Apothecary':^20}",
-              '\n', f"{'[T]':^20}{'[I]':^20}{'[L]':^20}",
-              '\n', f"{'Tavern':^20}{'Inn':^20}{'Leave':^20}",
-              '\n', '-' * 60, sep='')
-
-
-def enter_village(context):
-    print("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
-          "The street is still busy with life as people walk among the shops to trade. "
-          "You can hear music playing from the tavern, and your stomach tightens at the smell "
-          "of hot stew and fresh bread. You feel anxious to finish your business here, "
-          "but staying a night or two couldn't hurt.")
-    options('village')
-    playing = input().lower()
-    while playing != 'l':
-        clear_console()
-        if playing == 'w':
-            print("Following the rythmic beating of hammer to metal, you find the local weaponsmith. "
-                  "With a glance up from her work and a small nod, she acknowledges you and offers her inventory.")
-            shop('weaponsmith')
-        # elif playing == 'a':
-        #     armorsmith()
-        # elif playing == 'p':
-        #     apothecary()
-        # elif playing == 't':
-        #     tavern()
-        # elif playing == 'r':
-        #     inn()
-        elif playing == 's':
-            hero.display_character_sheet()
-        elif playing == 'i':
-            hero.display_inventory()
-        elif playing == 'e':
-            hero.equip()
-        elif playing == 'u':
-            hero.unequip()
-        elif playing == 'a':
-            hero.ability_to_bar()
-        elif playing == 'c':
-            hero.chug()
-        elif playing == 'o':
-            options("village")
-        options('village')
-        playing = input().lower()
-    clear_console()
 
 
 def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
@@ -267,37 +200,122 @@ def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
     return within_range
 
 
-def shop(context):
-    choice = ''
-    while choice != 'l':
+def options(context):
+    if context == 'check surroundings':
+        padding = ' ' * (60 - 8 - len(hero.view_location()))
+        print(f"\n{'Options:'}{padding}{hero.view_location()}",
+              '\n', '-' * 60,
+              '\n', f"{'[Enter]':^20}{'[R]':^20}{'[=]':^20}",
+              '\n', f"{'Check surroundings':^20}{'[Rename Gear]':^20}{'Save progress':^20}",
+              '\n', f"{'[S]':^20}{'[I]':^20}{'[E]':^20}",
+              '\n', f"{'Character Sheet':^20}{'Inventory':^20}{'Equipment':^20}",
+              '\n', f"{'[A]':^20}{'[C]':^20}{'[H]':^20}",
+              '\n', f"{'Abilities':^20}{'Consumables':^20}{'Cast Heal':^20}",
+              '\n', '-' * 60, sep='')
+    elif context == 'renaming':
         print(f"\n{'Options:'}",
               '\n', '-' * 60,
+              '\n', f"{'[1]':^30}{'[2]':^30}",
+              '\n', f"{'New Name':^30}{'[Revert Name]':^30}",
+              '\n', '-' * 60, sep='')
+    elif context == 'combat':
+        print(f"\n{'[C]':^15}{'[I]':^15}{'[W]':^15}{'[R]':^15}",
+              '\n', f"{'Consumables':^15}{'Inventory':^15}{'Wait':^15}{'Run Away':^15}",
+              '\n', '-' * 60,sep='')
+    elif context == 'village':
+        print('\nOptions: ',
+              '\n', '-' * 60,
+              '\n', f"{'[W]':^20}{'[A]':^20}{'[]':^20}",
+              '\n', f"{'Weaponsmith':^20}{'Armorsmith':^20}{'Apothecary':^20}",
               '\n', f"{'[]':^20}{'[]':^20}{'[L]':^20}",
+              '\n', f"{'Tavern':^20}{'Inn':^20}{'Leave':^20}",
+              '\n', '-' * 60, sep='')
+    elif context == 'w':  # weaponsmith
+        print(f"\n{'Options:'}",
+              '\n', '-' * 60,
+              '\n', f"{'[]':^20}{'[S]':^20}{'[L]':^20}",
               '\n', f"{'Buy':^20}{'Sell':^20}{'Leave':^20}",
               '\n', f"{'[]':^20}{'[E]':^20}",
-              '\n', f"{'Repair':^20}{'Enhance':^20}")
-        choice = input().lower()
+              '\n', f"{'Repair':^20}{'Enhance':^20}",
+              '\n', '-' * 60, sep='')
+    elif context == 'a':  # armorsmith
+        print(f"\n{'Options:'}",
+              '\n', '-' * 60,
+              '\n', f"{'[]':^20}{'[S]':^20}{'[L]':^20}",
+              '\n', f"{'Buy':^20}{'Sell':^20}{'Leave':^20}",
+              '\n', f"{'[]':^20}{'[E]':^20}",
+              '\n', f"{'Repair':^20}{'Enhance':^20}",
+              '\n', '-' * 60, sep='')
+
+
+def enter_village(context):
+    print("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
+          "The street is still busy with life as people walk among the shops to trade. "
+          "You can hear music playing from the tavern, and your stomach tightens at the smell "
+          "of hot stew and fresh bread. You feel anxious to finish your business here, "
+          "but staying a night or two couldn't hurt.")
+    options('village')
+    playing = input().lower()
+    while playing != 'l':
         clear_console()
-        # if choice == 'b':
-            # buying(context)
-        if choice == 's':
-            selling(context)
-        elif choice == 'r':
-            enhance(context)
-        elif choice == 'e':
-            enhance('weaponsmith')
-        elif choice == 'l':
-            print("You turn and step back into the main thoroughfare.")
-        elif choice == 'i':
+        if playing == 'w':
+            print("Following the rythmic beating of hammer to metal, you find the local weaponsmith. "
+                  "With a glance up from her work and a small nod, she acknowledges you and offers her inventory.")
+            shop(playing)
+        elif playing == 'a':
+            print("You spot the armorsmith near the village entrance. Various shields and a few half-decent riding"
+                  " tunics on display endure what might well be their thousanth tortured day in the full sun.")
+            shop(playing)
+        # elif playing == 'p':
+        #     apothecary()
+        # elif playing == 't':
+        #     tavern()
+        # elif playing == 'r':
+        #     inn()
+        elif playing == 's':
+            hero.display_character_sheet()
+        elif playing == 'i':
             hero.display_inventory()
+        elif playing == 'e':
+            hero.equip()
+        elif playing == 'u':
+            hero.unequip()
+        elif playing == 'a':
+            hero.ability_to_bar()
+        elif playing == 'c':
+            hero.chug()
+        options('village')
+        playing = input().lower()
+    clear_console()
 
 
-def enhance(context):
+def shop(shop_choice):
+    service_option = ''
+    while service_option != 'l':
+        options(shop_choice)
+        service_option = input().lower()
+        clear_console()
+        if shop_choice in ['w', 'a']:
+            # if service_option == 'b':
+                # buying(shop_choice)
+            if service_option == 's':
+                selling(Gear, shop_choice, service_option)
+            elif service_option == 'r':
+                repair(shop_choice, service_option)
+            elif service_option == 'e':
+                enhance(shop_choice, service_option)
+            elif service_option == 'i':
+                hero.display_inventory()
+    print("You turn and step back onto the village road.")
+
+
+def enhance(shop_choice, service_option):
     # DISPLAY
-    gear_list = hero.get_list_of_all(Gear, 'enhance')
+    gear_list = hero.get_list_of_all(Gear, shop_choice, service_option)
     if gear_list:
+        print(f"Gold:{hero.gold:>55}")
         print('-' * 60)
-        if hero.display_item_list(Gear, ['weaponsmith', 'enhance'], gear_list):
+        if hero.display_item_list(Gear, shop_choice, service_option, gear_list):
             print('-' * 60)
             choice = input("What would you like enhanced?  (O indicates enhancement available)\n")
             # SELECTION
@@ -305,82 +323,125 @@ def enhance(context):
                 if choice == str(index + 1):
                     print("Sure, hon. I can enhance the following on that;")
                     hotkey, d = 1, {}
-                    if item.melee_boost_scalar != 1:
-                        print(f"[{hotkey}] melee power")
+                    cost = max(int(item.value/10), 1)
+                    if item.melee_boost_scalar < 1:
+                        print(f"[{hotkey}] {'melee power':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'melee'
                         hotkey += 1
-                    if item.magic_boost_scalar != 1:
-                        print(f"[{hotkey}] magic power")
+                    if item.magic_boost_scalar < 1:
+                        print(f"[{hotkey}] {'magic power':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'magic'
                         hotkey += 1
-                    if item.hp_regen_scalar != 1:
-                        print(f"[{hotkey}] health regen")
+                    if item.hp_regen_scalar < 1:
+                        print(f"[{hotkey}] {'health regen':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'hp_regen'
                         hotkey += 1
-                    if item.mp_regen_scalar != 1:
-                        print(f"[{hotkey}] mana regen")
+                    if item.mp_regen_scalar < 1:
+                        print(f"[{hotkey}] {'mana regen':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'mp_regen'
                     choice = input()
-                    for k, v in d.items():
-                        if choice == str(k):
-                            if v == 'melee':
-                                item.melee_boost_scalar += 0.25
-                                item.melee_boost = item.init_melee * item.melee_boost_scalar
-                            elif v == 'magic':
-                                item.magic_boost_scalar += 0.25
-                                item.magic_boost = item.init_magic * item.magic_boost_scalar
-                            elif v == 'hp_regen':
-                                item.hp_regen_scalar += 0.25
-                                item.hp_regen = item.init_melee * item.hp_regen_scalar
-                            elif v == 'mp_regen':
-                                item.melee_boost_scalar += 0.25
-                                item.melee_boost = item.init_melee * item.melee_boost_scalar
-                            print("You're all set.")
-                            print(item.melee_boost_scalar, item.magic_boost_scalar, item.hp_regen_scalar)
-                            break
+                    if hero.gold >= cost:
+                        for k, v in d.items():
+                            if choice == str(k):
+                                if v == 'melee':
+                                    item.melee_boost_scalar += 0.25
+                                    item.melee_boost = item.init_melee * item.melee_boost_scalar
+                                    item.value = max(int(item.value + item.value/12), 1)
+                                    hero.gold -= cost
+                                elif v == 'magic':
+                                    item.magic_boost_scalar += 0.25
+                                    item.magic_boost = item.init_magic * item.magic_boost_scalar
+                                    item.value = max(int(item.value + item.value/12), 1)
+                                    hero.gold -= cost
+                                elif v == 'hp_regen':
+                                    item.hp_regen_scalar += 0.25
+                                    item.hp_regen = item.init_hp_regen * item.hp_regen_scalar
+                                    item.value = max(int(item.value + item.value/12), 1)
+                                    hero.gold -= cost
+                                elif v == 'mp_regen':
+                                    item.mp_regen_scalar += 0.25
+                                    item.mp_regen = item.init_mp_regen * item.mp_regen_scalar
+                                    item.value = max(int(item.value + item.value/12), 1)
+                                    hero.gold -= cost
+                                if item.melee_boost_scalar + item.magic_boost_scalar\
+                                        + item.hp_regen_scalar + item.mp_regen_scalar == 4:
+                                    item.value = int(item.init_value * 1.6)
+                                    item.fully_enhanced = True
+                                    item.name = '*' + item.name
+                                    item.default_name = item.name
+                                    print("Looks like that's all I can do with this one.")
+                                else:
+                                    print("You're all set.")
+                    else:
+                        print("Seems you can't cover the cost.")
     else:
         print("You've got nothing that needs my touch.")
 
 
-def repair(context):
+def repair(shop_choice, service_option):
     pass
 
 
-def selling(context):
-    list = hero.get_list_of_all(Gear, "weaponsmith")  # [ obj, (list item 1, 2, 3, etc...) ]
-
-    if list:
-        choice = input("What would you like to sell?  [B] Back\n")
-        choice = choice.lower()
-        for i in list:
-            if choice == str(i[1]):
-                number = 1
-                if i[0].quantity > 1:
-                    number = input("How many? You have " + str(i[0].quantity) + '.\n')
-                    if number.isdigit():
-                        number = int(number)
-                    else:
-                        print("Invalid entry.")
-                for n in range(number):
-                    i[0].quantity -= 1
-                    if i[0].quantity == 0:
-                        hero.inventory.remove(i[0])
-                sold_for = i[0].value * number
-                hero.gold += sold_for
-                print("You sell ", number, ' ', i[0].name, " for ", sold_for, " gold.",
-                      '\n', "You now have ", hero.gold, " gold.",
-                      sep='')
-                if list:
-                    selling(context)
-            elif choice == 'b':
-                shop(context)
-            elif choice == 'i':
-                hero.display_inventory()
-                shop(context)
-
+def selling(class_type, shop_choice, service_option):
+    # DISPLAY
+    item_list = hero.get_list_of_all(class_type, shop_choice, service_option)
+    if item_list:
+        print(f"Gold:{hero.gold:>55}")
+        print('-' * 60)
+        hero.display_item_list(Gear, shop_choice, service_option, item_list)
+        print('-' * 60)
+        choice = input("What would you like to sell?\n").lower()
+        # SELECTION
+        for index, item in enumerate(item_list):
+            if choice == str(index + 1):
+                if shop_choice in ['w', 'a']:  # bc some shops deal in stackables, while 'w' and 'a' don't
+                    clear_console()
+                    hero.gold += item.value
+                    hero.inventory.remove(item)
+                    response = get_NPC_response(shop_choice, item.tier)
+                    print(response)
+                # number = 1
+                # if item[0].quantity > 1:
+                #     number = input("How many? You have " + str(item[0].quantity) + '.\n')
+                #     if number.isdigit():
+                #         number = int(number)
+                #     else:
+                #         print("Invalid entry.")
+                # for n in range(number):
+                #     item[0].quantity -= 1
+                #     if item[0].quantity == 0:
+                #         hero.inventory.remove(item[0])
+                # sold_for = item[0].value * number
+                # hero.gold += sold_for
+                # print("You sell ", number, ' ', item[0].name, " for ", sold_for, " gold.",
+                #       '\n', "You now have ", hero.gold, " gold.",
+                #       sep='')
     else:
         print("You have nothing to sell here.")
-        shop(context)
+
+
+def reset_name():
+    options('renaming')
+    choice = input()
+    if choice == '1':
+        hero.rename_gear()
+        clear_console()
+    elif choice == '2':
+        hero.reset_gear_name()
+        clear_console()
+
+
+def get_NPC_response(context, tier=None):
+    if context in ['w', 'a']:
+        responses = ['You found this where, exactly?',
+                     'Oh my...',
+                     'Thank you for this.',
+                     'You might have rinsed it off first.',
+                     'I might be able to sell this.',
+                     'Won\'t have much use for that.',
+                     'What minstrel\'s child crafted this?',
+                     'Well, I can see why its previous owner didn\'t survive.']
+        return random.choice(responses)
 
 
 def event_roll():
@@ -553,18 +614,18 @@ def chest():
 
     if choice == 'y':
         for item in list_of_common_items:
-            rngesus = random.randint(1, 100)
-            if rngesus < 15 and count < 5:
+            rngesus = random.uniform(0, 1)
+            if rngesus < 0.15 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
 # It'd be interesting to find gear tiered in a range around your level, so tier 1 items eventually don't drop
-            if hero.stats['burden_current'] < hero.stats['burden_limit']:
-                rngesus = random.randint(1, 100)
-                if rngesus < 10 and count < 5:
-                    chest_looting(Gear(*random.choice(list_of_gear)))
-                    looted_item = True
-                    count += 1
+        if hero.stats['burden_current'] < hero.stats['burden_limit']:
+            rngesus = random.uniform(0, 1)
+            if rngesus < 1 and count < 5:
+                chest_looting(Gear(*random.choice(list_of_gear)))
+                looted_item = True
+                count += 1
 
         if not looted_item:
             print("You find nothing of value.")
@@ -674,6 +735,8 @@ def main():
             enter_village('from outside')
         # elif playing == 'f' and lake:
         #     fishing()
+        elif playing == 'r':
+            reset_name()
         elif playing == '':
             event_roll()
         elif playing == '=':

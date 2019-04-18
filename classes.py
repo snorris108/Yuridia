@@ -128,7 +128,7 @@ class Char:
         """
         hotkey = 1
         for k, v in self.equipment.items():
-            hotkey_fmt = f'[{str(hotkey)}]' if context in ['during unequip', 'weaponsmith'] else ''
+            hotkey_fmt = f'[{str(hotkey)}]' if context in ['during unequip', 'weaponsmith', 'renaming'] else ''
             ohAtkPenalty = 0.7 if k == 'Offhand' else 1
             if v:
                 melatk = int(v.melee_boost * ohAtkPenalty)
@@ -154,7 +154,7 @@ class Char:
                 print('-' * 60)
                 self.display_equipment('during equip')
             print('-' * 60)
-            self.display_item_list(Gear, ['from gear'], gear_list)
+            self.display_item_list(Gear, 'from gear', None, gear_list)
             print('-' * 60)
             choice = input('What would you like to equip? ([Enter]-cancel)\n')
             # SELECTION
@@ -291,21 +291,40 @@ class Char:
             print("You have nothing to consume.",
                   '\n', '-' * 30, sep='')
 
-    def get_list_of_all(self, class_type, context=None):
+    def get_list_of_all(self, class_type, context=None, service_option=None):
         item_list = []
         if context == 'unequipping':
             for gear in self.equipment.values():
                 item_list.append(gear)
-        elif context == 'weaponsmith':
-            for item in self.inventory:
-                if isinstance(item, Gear):
-                    if 'Mainhand' in item.slot or 'Offhand' in item.slot:
+        elif context == 'renaming':
+            for gear in self.equipment.values():
+                if gear:
+                    item_list.append(gear)
+            for gear in self.inventory:
+                if isinstance(gear, class_type):
+                    item_list.append(gear)
+        elif context == 'w':
+            if service_option == 'e':
+                for item in self.inventory:
+                    if isinstance(item, Gear) and ('Mainhand' in item.slot or 'Offhand' in item.slot):
+                        if item.melee_boost_scalar < 1 or item.magic_boost_scalar < 1\
+                                or item.hp_regen_scalar < 1 or item.mp_regen_scalar < 1:
+                            item_list.append(item)
+            elif service_option == 's':
+                for item in self.inventory:
+                    if isinstance(item, Gear) and ('Mainhand' in item.slot or 'Offhand' in item.slot):
                         item_list.append(item)
-        elif context == 'enhance':
-            for item in self.inventory:
-                if isinstance(item, class_type):
-                    if item.melee_boost_scalar < 1 or item.magic_boost_scalar < 1\
-                            or item.hp_regen_scalar < 1 or item.mp_regen_scalar < 1:
+
+        elif context == 'a':
+            if service_option == 'e':
+                for item in self.inventory:
+                    if isinstance(item, Gear) and not ('Mainhand' in item.slot or 'Offhand' in item.slot):
+                        if item.melee_boost_scalar < 1 or item.magic_boost_scalar < 1\
+                                or item.hp_regen_scalar < 1 or item.mp_regen_scalar < 1:
+                            item_list.append(item)
+            elif service_option == 's':
+                for item in self.inventory:
+                    if isinstance(item, Gear) and not ('Mainhand' in item.slot or 'Offhand' in item.slot):
                         item_list.append(item)
         else:
             for item in self.inventory:
@@ -315,49 +334,59 @@ class Char:
         item_list.sort(key=lambda k: (k.melee_boost + k.magic_boost), reverse=True)
         return item_list
 
-    def display_item_list(self, class_type, context, item_list):
+    def display_item_list(self, class_type, context, service_option, item_list):
         if item_list:
-            if context[0] in ["weaponsmith", "armorsmith", "apothecary"]:
-                if context[1] == 'enhance':
-                    print(f"{'':6}{'Name':<18}{'Melee':^9}{'Magic':^9}{'HP regen':^9}{'MP regen':^9}")
-                    melee, magic, hp, mp = '', '', '', ''
-                    for index, gear_instance in enumerate(item_list):
+            # FORMAT ITEM LIST FOR SHOP VIEW
+            if context in ['w', 'a', 'p']:
+                if service_option == 'e':
+                    print(f"{'':6}{'Name':18}{'Melee':^9}{'Magic':^9}{'HP regen':^9}{'MP regen':^9}")
+                    for index, item in enumerate(item_list):
+                        melee, magic, hp, mp = '', '', '', ''
                         hotkey = f"[{index + 1}]"
-                        if gear_instance.melee_boost_scalar < 1:
+                        if item.melee_boost_scalar < 1:
                             melee = 'O'
-                        if gear_instance.magic_boost_scalar < 1:
+                        if item.magic_boost_scalar < 1:
                             magic = 'O'
-                        if gear_instance.hp_regen_scalar < 1:
+                        if item.hp_regen_scalar < 1:
                             hp = 'O'
-                        if gear_instance.mp_regen_scalar < 1:
+                        if item.mp_regen_scalar < 1:
                             mp = 'O'
-                        print(f"{hotkey:6}{gear_instance.name:<18}{melee:^9}{magic:^9}{hp:^9}{mp:^9}")
-                        return True
-                elif class_type == Gear:
-                    print(f"{'':6}{'Type':20}{'Damage':^16}{'Effect':^15}{'Value':^8}")
+                        print(f"{hotkey:6}{item.name:18}{melee:^9}{magic:^9}{hp:^9}{mp:^9}")
                     return True
-                else:
-                    print(f"{'':6}{'Type':14}")
-                    return True
-            else:
-                print(f"{class_type.__name__}: ")
-                if class_type == Gear:
-                    contextual = 'Value' if context in ['weaponsmith', 'armorsmith', 'apothecary'] else 'Burden'
-                    print(f"{'':6}{'Name':<18}{'Damage':^14}{'Effect':^14}{contextual:>8}")
-                elif class_type == Consumable:
-                    print(f"{'':6}{'Name':10}{'Quantity':10}{'Effect':36}")
-                for index, item in enumerate(item_list):
-                    hotkey = f"[{index + 1}]"
-                    if class_type == Gear:
-                        contextual = item.value if context in ['weaponsmith', 'armorsmith', 'apothecary'] else item.burden
+                elif service_option == 's':
+                    print(f"{'':6}{'Name':18}{'Damage':^14}{'Effect':^14}{'Value':>8}")
+                    for index, item in enumerate(item_list):
+                        hotkey = f"[{index + 1}]"
+                        # if class_type == Gear:
                         atk_str = f"(/{str(item.melee_boost)}) " if item.melee_boost else ''
                         if item.magic_boost:
                             atk_str += f"(*{str(item.magic_boost)})"
                         regen_str = f"(^{str(item.hp_regen)}^hp)" if item.hp_regen else ''
                         if item.mp_regen:
                             regen_str += f"(^{str(item.mp_regen)}^mp)"
-                        print(f"{hotkey:<6}{item.name:<18}{atk_str:^14}{regen_str:^14}{contextual:>8}")
-                        return True
+                        print(f"{hotkey:6}{item.name:18}{atk_str:^14}{regen_str:^14}{item.value:>8}")
+                        pass
+                elif class_type == Gear:
+                    print(f"{'':6}{'Type':20}{'Damage':^16}{'Effect':^15}{'Value':^8}")
+                else:
+                    print(f"{'':6}{'Type':14}")
+            # FORMAT ITEM LIST FOR 'ON THE ROAD' VIEW
+            else:
+                print(f"{class_type.__name__}: ")
+                if class_type == Gear:
+                    print(f"{'':6}{'Name':18}{'Damage':^14}{'Effect':^14}{'Burden':>8}")
+                elif class_type == Consumable:
+                    print(f"{'':6}{'Name':10}{'Quantity':10}{'Effect':36}")
+                for index, item in enumerate(item_list):
+                    hotkey = f"[{index + 1}]"
+                    if class_type == Gear:
+                        atk_str = f"(/{str(item.melee_boost)}) " if item.melee_boost else ''
+                        if item.magic_boost:
+                            atk_str += f"(*{str(item.magic_boost)})"
+                        regen_str = f"(^{str(item.hp_regen)}^hp)" if item.hp_regen else ''
+                        if item.mp_regen:
+                            regen_str += f"(^{str(item.mp_regen)}^mp)"
+                        print(f"{hotkey:6}{item.name:18}{atk_str:^14}{regen_str:^14}{item.burden:>8}")
                     elif class_type == Consumable:
                         quantity = f"({str(item.quantity)})"
                         effect = ''
@@ -370,9 +399,47 @@ class Char:
                         if item.mp_gain:
                             effect += f"(+{item.mp_gain}mp)"
                         print(f"{hotkey:6}{item.name:10}{quantity:10}{effect:36}")
-                        return True
         else:
             return False
+
+    def rename_gear(self):
+        # DISPLAYS
+        gear_list = self.get_list_of_all(Gear, 'renaming')
+        if gear_list:
+            print('-' * 60)
+            self.display_item_list(Gear, 'renaming', None, gear_list)
+            print('-' * 60)
+            choice = input('What would you like to rename? ([Enter]-cancel)\n')
+            # SELECTION
+            for index, item in enumerate(gear_list):
+                if choice == str(index + 1):
+                    item.name = input("Rename to:\n")
+                    while len(item.name) > 16:
+                        print("Keep it short (max 16 characters)")
+                        item.name = input("Rename to:\n")
+                    if item.fully_enhanced:
+                        item.name = '*' + item.name
+        else:
+            print("You have no gear.")
+
+    def reset_gear_name(self):
+        # DISPLAYS
+        gear_list = self.get_list_of_all(Gear, 'renaming')
+        if gear_list:
+            print('-' * 60)
+            self.display_equipment('renaming')
+            print('-' * 60)
+            self.display_item_list(Gear, 'renaming', None, gear_list)
+            print('-' * 60)
+            choice = input('Which item\'s name should reset? ([Enter]-cancel)\n')
+            # SELECTION
+            for index, item in enumerate(gear_list):
+                if choice == str(index + 1):
+                    item.name = item.default_name
+                    print("Done.")
+        else:
+            print("You have no gear.")
+
 
     def regen(self, context):
         increment = 3 if context == "roaming" else 1
@@ -483,7 +550,7 @@ def player():
                  'magic_base_atk': 25,
                  'magic_boost': 0,
                  'burden_current': 0,
-                 'burden_limit': 20,
+                 'burden_limit': 40,
                  'level': 1,
                  'xp': 0,
                  'prev_level_xp': 0,

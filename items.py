@@ -7,7 +7,7 @@ class Gear:
                  melee_boost, magic_boost, poison_boost, hp_regen, mp_regen):
         self.name = name
         self.value = value
-        self.init_value = value
+        self.init_value = value  # possibly not needed, value *= 1.083 for each enhance
         self.tier = tier
         self.burden = burden
         self.dmg_style = dmg_style
@@ -29,7 +29,14 @@ class Gear:
         self.mp_regen = int(self.init_mp_regen * self.mp_regen_scalar)
         self.poison_boost = poison_boost
         self.durability = 100 * random.choice([0.5, 0.75, 1])
+        self.fully_enhanced = False
+        if self.melee_boost_scalar + self.magic_boost_scalar \
+                + self.hp_regen_scalar + self.mp_regen_scalar == 4:
+            self.fully_enhanced = True
+            self.name = '*' + name
+            self.value = int(value * 1.6)
         self.default_name = name
+
 
 
 class Item:
