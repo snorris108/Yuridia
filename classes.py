@@ -75,10 +75,10 @@ class Char:
                 print(f"{'':5}{item.name:21}{item.value:>5}", sep='')
             else:
                 value = item.value * item.quantity
-                if len(value) > 3:
-                    value = str(value[0]) + 'k'
-                elif len(value) > 6:
-                    value = str(value[0]) + 'm'
+                if len(str(value)) > 3:
+                    value = str(value)[:-3] + ' k' # 10,000 = 10 k, 100,000 = 100 k
+                elif len(str(value)) > 6:
+                    value = str(value)[:-3] + ' m'
                 print(f"{item.quantity:4}{' '}{item.name:21}{value:>5}")
         if not self.inventory:
             print("Your backpack is empty.")

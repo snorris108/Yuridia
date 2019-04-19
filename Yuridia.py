@@ -616,7 +616,7 @@ def chest():
     if choice == 'y':
         for item in list_of_common_items:
             rngesus = random.uniform(0, 1)
-            if rngesus < 0.15 and count < 5:
+            if rngesus < 10.15 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
