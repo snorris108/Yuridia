@@ -65,34 +65,67 @@ class Tool(Item):
         # self.durability = durability
 
 
-# name, value, tier, burden, dmg_style, slot,       melee_boost, magic_boost, poison_boost, hp_regen, mp_regen
-small_dagger = ['small dagger',     4, 1, 1, 'melee', ['Mainhand', 'Offhand'],          8, 0, 0, 0, 0]
-ilorian_dagger = ['Ilorian dagger', 6, 1, 1, 'melee', ['Mainhand', 'Offhand'],          12, 0, 0, 0, 0]
+#               name,                       value, tier, burden,            boost: mel, mag, poi, regen: hp, mp
+small_dagger = ['small dagger',             4, 1, 1, 'melee', ['Mainhand', 'Offhand'],  8, 0, 0, 0, 0]
+ilorian_dagger = ['Ilorian dagger',         6, 1, 1, 'melee', ['Mainhand', 'Offhand'],  12, 0, 0, 0, 0]
 ilorian_shortsword = ['Ilorian shortsword', 10, 1, 1, 'melee', ['Mainhand', 'Offhand'], 14, 0, 0, 0, 0]
-ilorian_longsword = ['Ilorian longsword', 16, 1, 2, 'melee', ['Mainhand', 'Offhand'],   24, 0, 0, 0, 0]
-ilorian_claymore = ['Ilorian claymore', 24, 1, 4, 'melee', ['Mainhand', 'Offhand'],     32, 0, 0, 0, 0]
-flanged_mace = ['flanged mace',     14, 1, 2, 'melee', ['Mainhand', 'Offhand'],         14, 0, 0, 0, 0]
-spiked_mace = ['spiked mace',       14, 1, 2, 'melee', ['Mainhand', 'Offhand'],         16, 0, 0, 0, 0]
-blessed_mace = ['blessed mace',     18, 1, 2, 'melee', ['Mainhand', 'Offhand'],         4, 12, 0, 0, 0]
-scimitar = ['scimitar',             16, 1, 2, 'melee', ['Mainhand', 'Offhand'],         20, 0, 0, 0, 0]
-rapier = ['rapier',                 18, 1, 1, 'melee', ['Mainhand', 'Offhand'],         18, 0, 0, 0, 0]
-gladius = ['gladius',               28, 1, 2, 'melee', ['Mainhand', 'Offhand'],         24, 0, 0, 0, 0]
-kings_blade = ["King's Blade",      26, 3, 6, 'melee', ['Mainhand', 'Offhand'],         26, 0, 0, 8, 0]
-ilan_branch = ['ilan branch',       1, 1, 1, 'magic', ['Mainhand', 'Offhand'],          0, 7, 0, 0, 1]
-wand = ['wand',                     16, 1, 1, 'magic', ['Mainhand', 'Offhand'],         0, 16, 0, 0, 1]
-targe = ['targe',                   10, 1, 2, 'melee, defense', ['Offhand'],            5, 0, 0, 0, 0]
-glimmering_orb = ['glimmering orb', 36, 1, 1, 'magic', ['Offhand'],                     0, 8, 0, 0, 6]
-leather_cap = ['leather cap',       8, 1, 1, 'melee, defense', ['Head'],                0, 0, 0, 3, 0]
-heavy_tunic = ['heavy tunic',       8, 1, 8, 'defense', ['Body'],                       5, 0, 0, 2, 0]
-thick_chaps = ['thick chaps',       16, 1, 6, 'defense', ['Legs'],                      4, 0, 0, 2, 0]
-iron_gloves = ['iron gloves',       10, 1, 2, 'defense', ['Hands'],                     2, 0, 0, 0, 0]
-cut_boots = ['cut boots',           10, 1, 2, 'defense', ['Feet'],                      2, 0, 0, 0, 0]
-old_ring = ['old ring',             28, 3, 1, 'magic', ['Ring'],                        0, 6, 0, 0, 1]
-clay_ring = ['clay ring',           22, 1, 1, 'melee', ['Ring'],                        6, 0, 0, 7, 0]
-crooked_staff = ['crooked staff',   24, 1, 2, 'magic', ['Mainhand', 'Offhand'],         0, 15, 0, 0, 2]
+ilorian_longsword = ['Ilorian longsword',   16, 1, 2, 'melee', ['Mainhand', 'Offhand'], 24, 0, 0, 0, 0]
+ilorian_claymore = ['Ilorian claymore',     24, 1, 4, 'melee', ['Mainhand', 'Offhand'], 32, 0, 0, 0, 0]
+flanged_mace = ['flanged mace',             14, 1, 2, 'melee', ['Mainhand', 'Offhand'], 14, 0, 0, 0, 0]
+spiked_mace = ['spiked mace',               14, 1, 2, 'melee', ['Mainhand', 'Offhand'], 16, 0, 0, 0, 0]
+blessed_mace = ['blessed mace',             18, 1, 2, 'melee', ['Mainhand', 'Offhand'], 4, 12, 0, 0, 0]
+scimitar = ['scimitar',                     16, 1, 2, 'melee', ['Mainhand', 'Offhand'], 20, 0, 0, 0, 0]
+rapier = ['rapier',                         18, 1, 1, 'melee', ['Mainhand', 'Offhand'], 18, 0, 0, 0, 0]
+gladius = ['gladius',                       28, 1, 2, 'melee', ['Mainhand', 'Offhand'], 24, 0, 0, 0, 0]
+targe = ['targe',                           6, 1, 2, 'melee, defense', ['Offhand'],    8, 0, 0, 0, 0]
+buckler = ['buckler',                       10, 1, 2, 'melee, defense', ['Offhand'],    12, 0, 0, 0, 0]
+ilan_branch = ['ilan branch',               1, 1, 1, 'magic', ['Mainhand', 'Offhand'],  0, 7, 0, 0, 1]
+wand = ['wand',                             16, 1, 1, 'magic', ['Mainhand', 'Offhand'], 0, 16, 0, 0, 2]
+glimmering_orb = ['glimmering orb',         36, 1, 1, 'magic', ['Offhand'],             0, 8, 0, 0, 4]
+flawless_skull = ['flawless skull',         45, 1, 3, 'magic', ['Offhand'],             0, 6, 0, 0, 6]
+leather_cap = ['leather cap',               8, 1, 1, 'defense', ['Head'],               0, 0, 0, 3, 0]
+jeweled_hood = ['jeweled hood',             16, 1, 1, 'defense', ['Head'],              0, 8, 0, 0, 2]
+heavy_tunic = ['heavy tunic',               8, 1, 8, 'defense', ['Body'],               5, 0, 0, 2, 0]
+corded_robes = ['corded robes',             21, 1, 5, 'defense', ['Body'],              0, 12, 0, 0, 3]
+thick_chaps = ['thick chaps',               16, 1, 6, 'defense', ['Legs'],              4, 0, 0, 2, 0]
+silk_hosen = ['silk_hosen',                 14, 1, 2, 'defense', ['Legs'],              0, 8, 0, 0, 1]
+iron_gloves = ['iron gloves',               10, 1, 2, 'defense', ['Hands'],             2, 0, 0, 0, 0]
+cut_boots = ['cut boots',                   10, 1, 2, 'defense', ['Feet'],              2, 0, 0, 0, 0]
+clay_ring = ['clay ring',                   22, 1, 1, 'melee', ['Ring'],                6, 0, 0, 7, 0]
+crooked_staff = ['crooked staff',           24, 1, 2, 'magic', ['Mainhand', 'Offhand'], 0, 15, 0, 0, 2]
 
-list_of_gear = [small_dagger, scimitar, kings_blade, ilan_branch, wand, targe, glimmering_orb, leather_cap, heavy_tunic,
-                thick_chaps, iron_gloves, cut_boots, old_ring, clay_ring, crooked_staff]
+kings_blade = ["King's Blade",              26, 3, 6, 'melee', ['Mainhand', 'Offhand'], 26, 0, 0, 8, 0]
+old_ring = ['old ring',                     28, 3, 1, 'magic', ['Ring'],                0, 6, 0, 0, 1]
+
+list_of_gear = [small_dagger,
+ilorian_dagger,
+ilorian_shortsword,
+ilorian_longsword,
+ilorian_claymore,
+flanged_mace,
+spiked_mace,
+blessed_mace,
+scimitar,
+rapier,
+gladius,
+kings_blade,
+ilan_branch,
+wand,
+targe,
+glimmering_orb,
+leather_cap,
+heavy_tunic,
+thick_chaps,
+iron_gloves,
+cut_boots,
+old_ring,
+clay_ring,
+crooked_staff,
+buckler,
+flawless_skull,
+jeweled_hood,
+corded_robes,
+silk_hosen]
 
 potion = Consumable('potion', 14, 100, 0, 0, 0, 0)
 ether = Consumable('ether', 21, 0, 18, 0, 0, 0)

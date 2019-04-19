@@ -370,6 +370,7 @@ def enhance(shop_choice, service_option):
                                     item.name = '*' + item.name
                                     item.default_name = item.name
                                     print("Looks like that's all I can do with this one.")
+                                    print(f"Your {item.name} seems to glow as she hands it back.")
                                 else:
                                     print("You're all set.")
                     else:
