@@ -748,7 +748,7 @@ def main():
             move()
             event_roll()
         elif playing == 'v' and near_village:
-            enter_village('from outside')
+            enter_village()
         # elif playing == 'f' and near_lake:
         #     fishing()
         elif playing == 'r':
@@ -758,7 +758,7 @@ def main():
         elif playing == '-':
             load_game()
         elif playing == 't':
-            encounter(create_mob(*kraken), hero.dist)
+            encounter(create_mob(*kraken, hero.dist))
         elif playing == 'x':
             chest()
         elif playing == 'stats':

@@ -4,7 +4,7 @@ from items import *
 import os
 
 
-WIN_WIDTH = 80
+WIN_WIDTH = 60
 os.system(f"mode con: cols={WIN_WIDTH} lines=45")
 
 
