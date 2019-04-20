@@ -1,10 +1,12 @@
 
+import math
 import random
 
 
 class Gear:
     def __init__(self, name, value, tier, burden, dmg_style, slot,
-                 melee_boost, magic_boost, poison_boost, hp_regen, mp_regen):
+                 melee_boost, magic_boost, poison_boost, hp_regen, mp_regen, dist):
+        multiplier = max(dist/10, 1)
         self.name = name
         self.value = value
         self.init_value = value  # possibly not needed, value *= 1.083 for each enhance
@@ -13,25 +15,29 @@ class Gear:
         self.dmg_style = dmg_style
         self.slot = slot
         # can enhance scalars < 1 at a smith
-        self.melee_boost_scalar = random.choice([0.5, 0.75, 1])
-        self.magic_boost_scalar = random.choice([0.5, 0.75, 1])
-        self.hp_regen_scalar = random.choice([0.5, 0.75, 1])
-        self.mp_regen_scalar = random.choice([0.5, 0.75, 1])
+        self.melee_boost_scalar = random.choice([0.5, 0.75, 1]) if melee_boost else 0
+        self.magic_boost_scalar = random.choice([0.5, 0.75, 1]) if magic_boost else 0
+        self.hp_regen_scalar = random.choice([0.5, 0.75, 1]) if hp_regen else 0
+        self.mp_regen_scalar = random.choice([0.5, 0.75, 1]) if mp_regen else 0
         # base stats for reference when applying modification
-        self.init_melee = melee_boost
-        self.init_magic = magic_boost
-        self.init_hp_regen = hp_regen
-        self.init_mp_regen = mp_regen
+        self.init_melee = melee_boost * multiplier
+        self.init_magic = magic_boost * multiplier
+        self.init_hp_regen = hp_regen * multiplier
+        self.init_mp_regen = mp_regen * multiplier
         # stats with boosts applied
         self.melee_boost = int(self.init_melee * self.melee_boost_scalar)
         self.magic_boost = int(self.init_magic * self.magic_boost_scalar)
         self.hp_regen = int(self.init_hp_regen * self.hp_regen_scalar)
         self.mp_regen = int(self.init_mp_regen * self.mp_regen_scalar)
-        self.poison_boost = poison_boost
+        self.poison_boost = poison_boost * multiplier
         self.durability = 100 * random.choice([0.5, 0.75, 1])
+
         self.fully_enhanced = False
-        if self.melee_boost_scalar + self.magic_boost_scalar \
-                + self.hp_regen_scalar + self.mp_regen_scalar == 4:
+        self.scalar_tot = self.melee_boost_scalar + self.magic_boost_scalar + \
+                          self.hp_regen_scalar + self.mp_regen_scalar
+        self.max_at = math.ceil(self.melee_boost_scalar) + math.ceil(self.magic_boost_scalar) + \
+                      math.ceil(self.hp_regen_scalar) + math.ceil(self.mp_regen_scalar)
+        if self.scalar_tot == self.max_at:
             self.fully_enhanced = True
             self.name = '*' + name
             self.value = int(value * 1.6)
@@ -88,7 +94,7 @@ jeweled_hood = ['jeweled hood',             16, 1, 1, 'defense', ['Head'],      
 heavy_tunic = ['heavy tunic',               8, 1, 8, 'defense', ['Body'],               5, 0, 0, 2, 0]
 corded_robes = ['corded robes',             21, 1, 5, 'defense', ['Body'],              0, 12, 0, 0, 3]
 thick_chaps = ['thick chaps',               16, 1, 6, 'defense', ['Legs'],              4, 0, 0, 2, 0]
-silk_hosen = ['silk_hosen',                 14, 1, 2, 'defense', ['Legs'],              0, 8, 0, 0, 1]
+silk_hosen = ['silk hosen',                 14, 1, 2, 'defense', ['Legs'],              0, 8, 0, 0, 1]
 iron_gloves = ['iron gloves',               10, 1, 2, 'defense', ['Hands'],             2, 0, 0, 0, 0]
 cut_boots = ['cut boots',                   10, 1, 2, 'defense', ['Feet'],              2, 0, 0, 0, 0]
 clay_ring = ['clay ring',                   22, 1, 1, 'melee', ['Ring'],                6, 0, 0, 7, 0]

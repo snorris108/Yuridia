@@ -1,6 +1,11 @@
 
 from abilities import *
 from items import *
+import os
+
+
+WIN_WIDTH = 80
+os.system(f"mode con: cols={WIN_WIDTH} lines=45")
 
 
 class Char:
@@ -23,11 +28,10 @@ class Char:
         self.equipment = equipment
         self.xpos = xpos
         self.ypos = ypos
-        self.dist = 0
         self.can_move = can_move
-        self.dist = math.floor(math.sqrt(xpos ** 2 + ypos ** 2))  # determines mob difficulty
         self.name = name
         self.gold = 0
+        self.dist = math.floor(math.sqrt(xpos ** 2 + ypos ** 2))  # determines mob difficulty
 
 
     def level_up(self):
@@ -64,10 +68,13 @@ class Char:
               '\n', f"{'M. Attack: ':8}{self.stats['magic_base_atk']}", sep='')
 
     def display_inventory(self):
+        if not self.inventory:
+            print("Your backpack is empty.")
+            return
         # HEADER
-        gold_padding = ' ' * (60 - 17 - len(str(self.gold)))
-        print(f"{'Inventory: '}{gold_padding}{'Gold: '}{self.gold}",
-              '\n', '----+' * 12, sep='')
+        gold_padding = ' ' * (WIN_WIDTH - 17 - len(str(self.gold)))
+        print(f"{'Inventory: '}{gold_padding}{'Gold: '}{self.gold}", '\n',
+              '----+' * int(WIN_WIDTH/5), sep='')
         print(f"{'':26}{'Value'}")
         # ITEM LIST
         for item in self.inventory:
@@ -80,18 +87,13 @@ class Char:
                 elif len(str(value)) > 6:
                     value = str(value)[:-3] + ' m'
                 print(f"{item.quantity:4}{' '}{item.name:21}{value:>5}")
-        if not self.inventory:
-            print("Your backpack is empty.")
-        print('----+' * 12)
+        print('----+' * int(WIN_WIDTH/5))
 
     def display_character_sheet(self):
         xp_bar_fill = int((1 - ((self.stats['next_level_at'] - self.stats['xp']) /
                            (self.stats['next_level_at'] - self.stats['prev_level_xp']))) * 35)
-        padding = ' ' * (60 - len(str(self.stats['race'] + ' (Level ' + str(self.stats['level']) + ')')) - 2 - 35)
-        hp_regen_fmt = ''
-        mp_regen_fmt = ''
-        melee_boost_fmt = ''
-        magic_boost_fmt = ''
+        padding = ' '*(WIN_WIDTH - len(str(self.stats['race'] + ' (Level ' + str(self.stats['level']) + ')')) - 2 - 35)
+        hp_regen_fmt, mp_regen_fmt, melee_boost_fmt, magic_boost_fmt = '', '', '', ''
         if self.stats['hp_regen'] != 0:
             hp_regen_fmt = f"{' (^'}{str(int(self.stats['hp_regen']))}{'^)'}"
         if self.stats['mp_regen'] != 0:
@@ -100,30 +102,23 @@ class Char:
             melee_boost_fmt = f"{' (+'}{str(int(self.stats['melee_boost']))}{')'}"
         if self.stats['magic_boost'] != 0:
             magic_boost_fmt = f"{' (+'}{str(int(self.stats['magic_boost']))}{')'}"
-        gold_padding = ' ' * (60 - 17 - 6 - len(self.name) - len(str(self.gold)))
+        gold_padding = ' ' * (WIN_WIDTH - 17 - 6 - len(self.name) - len(str(self.gold)))
         burden = f"{self.stats['burden_current']}/{self.stats['burden_limit']}"
         
-        print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{self.gold:>}",
-              '\n',
-              '----+' * 12,
-              '\n',
+        print(f"{'Character sheet: ':16}{self.name}{gold_padding}{'Gold: ':>}{self.gold:>}", '\n',
+              '----+' * int(WIN_WIDTH/5), '\n',
               f"{str(self.stats['race'])}{' (Level '}{str(self.stats['level'])}{')'}{padding}"
-              f"{'['}{'='* xp_bar_fill:35}{']'}",
-              '\n',
+              f"{'['}{'='* xp_bar_fill:35}{']'}", '\n',
               f"{'Health: ':>15}{'   '}", "{:>14}{:<}".format(
-                str(int(self.stats['hp_current'])) + '/' + str(int(self.stats['hp_base'])), hp_regen_fmt),
-              '\n',
+                str(int(self.stats['hp_current'])) + '/' + str(int(self.stats['hp_base'])), hp_regen_fmt), '\n',
               f"{'Mana: ':>15}{'   '}", "{:>14}{:<}".format(
-                str(self.stats['mp_current']) + '/' + str(self.stats['mp_base']), mp_regen_fmt),
-              '\n',
-              f"{'Attack: ':>15}{'   '}{self.stats['melee_base_atk']:>14}{melee_boost_fmt:<}",
-              '\n',
-              f"{'M. Attack: ':>15}{'   '}{self.stats['magic_base_atk']:>14}{magic_boost_fmt:<}",
-              '\n',
+                str(self.stats['mp_current']) + '/' + str(self.stats['mp_base']), mp_regen_fmt), '\n',
+              f"{'Attack: ':>15}{'   '}{self.stats['melee_base_atk']:>14}{melee_boost_fmt:<}", '\n',
+              f"{'M. Attack: ':>15}{'   '}{self.stats['magic_base_atk']:>14}{magic_boost_fmt:<}", '\n',
               f"{'Burden: ':>15}{'   '}{burden:>14}", sep='')
-        print('-' * 60)
+        print('-' * WIN_WIDTH)
         self.display_equipment('while viewing character sheet')
-        print('----+' * 12)
+        print('----+' * int(WIN_WIDTH/5))
         self.display_ability_bar()
         print('\n')
 
@@ -135,7 +130,7 @@ class Char:
         hotkey = 1
         print(f"{'':36}{'Atk':>6}{'M.Atk':>6}{'^HP^':>6}{'^MP^':>6}")
         for slot_name, item in self.equipment.items():
-            hotkey_fmt = f'[{str(hotkey)}]' if context in ['during unequip', 'weaponsmith', 'renaming'] else ''
+            hotkey_fmt = f"[{str(hotkey)}]" if context in ['during unequip', 'weaponsmith', 'renaming'] else ''
             ohAtkPenalty = 0.7 if slot_name == 'Offhand' else 1
             if item:
                 melatk = int(item.melee_boost * ohAtkPenalty)
@@ -158,11 +153,11 @@ class Char:
         gear_list = self.get_list_of_all(Gear, 'from gear')
         if gear_list:
             if context != 'enhance':
-                print('-' * 60)
+                print('-' * WIN_WIDTH)
                 self.display_equipment('during equip')
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             self.display_item_list(Gear, 'from gear', None, gear_list)
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             choice = input('What would you like to equip? ([Enter]-cancel)\n')
             # SELECTION
             for index, gear_instance in enumerate(gear_list):
@@ -187,9 +182,9 @@ class Char:
             print("You don't have any gear.")
 
     def unequip(self):
-        print('-' * 60)
+        print('-' * WIN_WIDTH)
         self.display_equipment('during unequip')
-        print('-' * 60)
+        print('-' * WIN_WIDTH)
         print("Which slot would you like to unequip? ([Enter]-cancel)")
         value_choice = input()
 
@@ -270,38 +265,39 @@ class Char:
     def chug(self):
         # DISPLAY
         consumables_list = self.get_list_of_all(Consumable)
+        if not consumables_list:
+            print("You have nothing to consume.")
+            return
         if consumables_list:
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             self.display_item_list(Consumable, None, None, consumables_list)
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             print("What would you like to consume?")
             choice = input("May enter '1' or '1 all' to consume all of an item.\n").lower()
             # SELECTION
             for index, item in enumerate(consumables_list):
-                if choice[0] == str(index + 1):
-                    if choice[-3:] == 'all':
-                        print(f"You drink all of your {item.name}s.")
-                        self.stats['hp_current'] = self.stats['hp_current'] + item.hp_gain * item.quantity
-                        self.stats['mp_current'] = self.stats['mp_current'] + item.mp_gain * item.quantity
-                        if item.hp_gain:
-                            print("You now have", math.floor(self.stats['hp_current']), "hp.")
-                        if item.mp_gain:
-                            print("You gain", item.mp_gain * item.quantity, "mp.")
-                        self.inventory.remove(item)
-                    else:
-                        print(f"You drink the {item.name}.")
-                        self.stats['hp_current'] += item.hp_gain
-                        self.stats['mp_current'] += item.mp_gain
-                        if item.hp_gain:
-                            print("You now have", math.floor(self.stats['hp_current']), "hp.")
-                        if item.mp_gain:
-                            print("You gain", item.mp_gain, "mp.")
-                        item.quantity -= 1
-                        if item.quantity == 0:
+                if choice:
+                    if choice[0] == str(index + 1):
+                        if choice[-3:] == 'all':
+                            print(f"You drink all of your {item.name}s.")
+                            self.stats['hp_current'] = self.stats['hp_current'] + item.hp_gain * item.quantity
+                            self.stats['mp_current'] = self.stats['mp_current'] + item.mp_gain * item.quantity
+                            if item.hp_gain:
+                                print("You now have", math.floor(self.stats['hp_current']), "hp.")
+                            if item.mp_gain:
+                                print("You gain", item.mp_gain * item.quantity, "mp.")
                             self.inventory.remove(item)
-        else:
-            print("You have nothing to consume.",
-                  '\n', '-' * 30, sep='')
+                        else:
+                            print(f"You drink the {item.name}.")
+                            self.stats['hp_current'] += item.hp_gain
+                            self.stats['mp_current'] += item.mp_gain
+                            if item.hp_gain:
+                                print("You now have", math.floor(self.stats['hp_current']), "hp.")
+                            if item.mp_gain:
+                                print("You gain", item.mp_gain, "mp.")
+                            item.quantity -= 1
+                            if item.quantity == 0:
+                                self.inventory.remove(item)
 
     def get_list_of_all(self, class_type, context=None, service_option=None):
         item_list = []
@@ -363,13 +359,13 @@ class Char:
                     for index, item in enumerate(item_list):
                         melee, magic, hp, mp = '', '', '', ''
                         hotkey = f"[{index + 1}]"
-                        if item.melee_boost_scalar < 1:
+                        if item.melee_boost_scalar < 1 and item.melee_boost > 0:
                             melee = 'O'
-                        if item.magic_boost_scalar < 1:
+                        if item.magic_boost_scalar < 1 and item.magic_boost > 0:
                             magic = 'O'
-                        if item.hp_regen_scalar < 1:
+                        if item.hp_regen_scalar < 1 and item.hp_regen > 0:
                             hp = 'O'
-                        if item.mp_regen_scalar < 1:
+                        if item.mp_regen_scalar < 1 and item.mp_regen > 0:
                             mp = 'O'
                         print(f"{hotkey:6}{item.name:18}{melee:^9}{magic:^9}{hp:^9}{mp:^9}")
                     return True
@@ -425,9 +421,9 @@ class Char:
         # DISPLAYS
         gear_list = self.get_list_of_all(Gear, 'need all gear')
         if gear_list:
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             self.display_item_list(Gear, 'renaming', None, gear_list)
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             choice = input('What would you like to rename? ([Enter]-cancel)\n')
             # SELECTION
             for index, item in enumerate(gear_list):
@@ -445,11 +441,11 @@ class Char:
         # DISPLAYS
         gear_list = self.get_list_of_all(Gear, 'need all gear')
         if gear_list:
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             self.display_equipment('renaming')
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             self.display_item_list(Gear, 'renaming', None, gear_list)
-            print('-' * 60)
+            print('-' * WIN_WIDTH)
             choice = input('Which item\'s name should reset? ([Enter]-cancel)\n')
             # SELECTION
             for index, item in enumerate(gear_list):
@@ -477,21 +473,21 @@ class Char:
 class Mob:
     def __init__(self, stats, loot, abilities):
         self.stats = stats
-        self.init_stats = stats.copy()
+        self.init_stats = stats.copy()  # am I using this?
         self.loot = loot
         self.abilities = abilities
         self.inventory = []
 
-    def equip(self):
+    def equip(self, dist):
         chance = {i: random.uniform(0, 1) for i in range(1, 9)}
-        pack = {1: Gear(*random.choice([i for i in list_of_gear if 'Mainhand' in i[5]])),
-                2: Gear(*random.choice([i for i in list_of_gear if 'Offhand' in i[5]])),
-                3: Gear(*random.choice([i for i in list_of_gear if 'Head' in i[5]])),
-                4: Gear(*random.choice([i for i in list_of_gear if 'Body' in i[5]])),
-                5: Gear(*random.choice([i for i in list_of_gear if 'Legs' in i[5]])),
-                6: Gear(*random.choice([i for i in list_of_gear if 'Hands' in i[5]])),
-                7: Gear(*random.choice([i for i in list_of_gear if 'Feet' in i[5]])),
-                8: Gear(*random.choice([i for i in list_of_gear if 'Ring' in i[5]]))}
+        pack = {1: Gear(*random.choice([i for i in list_of_gear if 'Mainhand' in i[5]]), dist),
+                2: Gear(*random.choice([i for i in list_of_gear if 'Offhand' in i[5]]), dist),
+                3: Gear(*random.choice([i for i in list_of_gear if 'Head' in i[5]]), dist),
+                4: Gear(*random.choice([i for i in list_of_gear if 'Body' in i[5]]), dist),
+                5: Gear(*random.choice([i for i in list_of_gear if 'Legs' in i[5]]), dist),
+                6: Gear(*random.choice([i for i in list_of_gear if 'Hands' in i[5]]), dist),
+                7: Gear(*random.choice([i for i in list_of_gear if 'Feet' in i[5]]), dist),
+                8: Gear(*random.choice([i for i in list_of_gear if 'Ring' in i[5]]), dist)}
         for index, odds in chance.items():
             if odds < 0.1:
                 self.inventory.append(pack[index])
@@ -538,20 +534,22 @@ class Mob:
 
 
 def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_regen, melee_base_atk, melee_boost,
-               melee_affinity, magic_base_atk, magic_boost, magic_affinity, level, xp_worth, loot, abilities):
+               melee_affinity, magic_base_atk, magic_boost, magic_affinity, level, xp_worth, loot, abilities,
+               dist):
+    multiplier = max(dist/1000, 1)
     return Mob({'race': race,
-                'hp_current': hp_current,
-                'hp_base': hp_base,
-                'hp_regen': hp_regen,
-                'mp_current': mp_current,
-                'mp_base': mp_base,
-                'mp_regen': mp_regen,
-                'melee_base_atk': melee_base_atk,
-                'melee_boost': melee_boost,
-                'melee_affinity': melee_affinity,
-                'magic_base_atk': magic_base_atk,
-                'magic_boost': magic_boost,
-                'magic_affinity': magic_affinity,
+                'hp_current': hp_current * multiplier,
+                'hp_base': hp_base * multiplier,
+                'hp_regen': hp_regen * multiplier,
+                'mp_current': mp_current * multiplier,
+                'mp_base': mp_base * multiplier,
+                'mp_regen': mp_regen * multiplier,
+                'melee_base_atk': melee_base_atk * multiplier,
+                'melee_boost': melee_boost * multiplier,
+                'melee_affinity': melee_affinity * multiplier,
+                'magic_base_atk': magic_base_atk * multiplier,
+                'magic_boost': magic_boost * multiplier,
+                'magic_affinity': magic_affinity * multiplier,
                 'level': level,
                 'xp_worth': xp_worth},
                loot, abilities)

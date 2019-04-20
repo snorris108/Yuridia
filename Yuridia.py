@@ -2,8 +2,11 @@ from classes import *
 
 import time
 import pickle
-import os
 
+
+"""
+pyinstaller -i Yuridia.ico -F Yuridia.py
+"""
 # DONE add Consumables interface, the potions equivalent of Equipment.
 # add new spells that unlock a certain levels.
 # new weapons, armor, accessories
@@ -14,16 +17,31 @@ import os
 # incorporate durability on weapons and armor, figure out how to handle items with diff durability states
 #     possibly only 3 tiers of degradation, to minimize amount of gear versions needed
 
-os.system('mode con: cols=75 lines=40')
+
+def wrapper(text):
+    words, lines = text.split(' '), [[]]
+    curr_len, final_string = 0, ''
+    for word in words:
+        curr_len += len(word) + 1
+        if curr_len > WIN_WIDTH:
+            lines[-1].append('\n')
+            lines.append([])
+            curr_len = len(word) + 1
+        lines[-1].append(f"{word} ")
+
+    for line in lines:
+        for word in line:
+            final_string += word
+    return final_string
 
 
 def intro():
     clear_console()
-    print('-' * 60,
-          '\n', "You awaken suddenly, a distant cry of pain from an unsettling dream still echoing in your mind. "
-                "Around you, the cave is still and damp. A sharp edge of light cuts across the floor, and as your"
-                " eyes adjust you hear the cry again, closer. A deer, possibly, finding its mortality. You gather "
-                "your gear and leave your dwelling.", sep='')
+    print('-' * 60)
+    print(wrapper("You awaken suddenly, a distant cry of pain from an unsettling dream still echoing in your mind. "
+                  "Around you, the cave is still and damp. A sharp edge of light cuts across the floor, and as your "
+                  "eyes adjust you hear the cry again, closer. A deer, possibly, finding its mortality. "
+                  "\nYou gather your gear and leave your dwelling."))
 
 
 def create_hero():
@@ -62,27 +80,27 @@ def clear_console():
 
 def check_surroundings():
     print()
-    village = compass(4, 12, 100,
-                      "You think you see smoke rising over the treetops to the ",
-                      "Your path forks off toward a village.")
-    lake = compass(6, 18, 120,
-                   "A gentle river is flowing away toward the ",
-                   "You stand at the shoreline of a small lake.")
-    grove = compass(6, 14, 60,
-                    "An old grove of redwood stands tall to the ",
-                    "The wood from these trees would make a strong fire.")
+    near_village = compass(4, 12, 100,
+                           "You think you see smoke rising over the treetops to the ",
+                           "Your path forks off toward a village.")
+    near_lake = compass(6, 18, 120,
+                        "A gentle river is flowing away toward the ",
+                        "You stand at the shoreline of a small lake.")
+    near_grove = compass(6, 14, 60,
+                         "An old grove of redwood stands tall to the ",
+                         "The wood from these trees would make a strong fire.")
     # caves = compass(2, 4, 137, "")
 
     options('check surroundings')
-    if village:
+    if near_village:
         print("[V] Enter the village")
-    if lake:
+    if near_lake:
         print("[F] Fish at the lake")
-    if grove:
-        print("[C] Chop firewood")
+    if near_grove:
+        print("[W] Explore woods")
     # if caves and lantern in hero.inventory:
     #     print("[N] Navigate the cave system")
-    return village, lake, grove
+    return near_village, near_lake, near_grove
 
 
 # def fishing():
@@ -195,78 +213,80 @@ def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
                 direction = 'south-east.'
             elif hero.xpos < xnearest_event and hero.ypos < ynearest_event:
                 direction = 'north-east.'
-        print(far_message, direction, sep='')
+        print(wrapper(far_message + direction))
     elif distance <= visible_near:
-        print(near_message, sep='')
+        print(wrapper(near_message))
         within_range = True
     return within_range
 
 
 def options(context):
+    pad = int(WIN_WIDTH/3)
     if context == 'check surroundings':
-        padding = ' ' * (60 - 8 - len(hero.view_location()))
+        padding = ' ' * (WIN_WIDTH - 8 - len(hero.view_location()))
         print(f"\n{'Options:'}{padding}{hero.view_location()}",
-              '\n', '-' * 60,
-              '\n', f"{'[Enter]':^20}{'[R]':^20}{'[=]':^20}",
-              '\n', f"{'Check surroundings':^20}{'[Rename Gear]':^20}{'Save progress':^20}",
-              '\n', f"{'[S]':^20}{'[I]':^20}{'[E]':^20}",
-              '\n', f"{'Character Sheet':^20}{'Inventory':^20}{'Equipment':^20}",
-              '\n', f"{'[A]':^20}{'[C]':^20}{'[H]':^20}",
-              '\n', f"{'Abilities':^20}{'Consumables':^20}{'Cast Heal':^20}",
-              '\n', '-' * 60, sep='')
+              '\n', '-' * WIN_WIDTH,
+              '\n', f"{'[Enter]':^{pad}}{'[=]':^{pad}}{'[H]':^{pad}}",
+              '\n', f"{'Check surroundings':^{pad}}{'[Save progress]':^{pad}}{'Cast Heal':^{pad}}",
+              '\n', f"{'[S]':^{pad}}{'[E]':^{pad}}{'[A]':^{pad}}",
+              '\n', f"{'Character Sheet':^{pad}}{'Equipment':^{pad}}{'Abilities':^{pad}}",
+              '\n', f"{'[I]':^{pad}}{'[R]':^{pad}}{'[C]':^{pad}}",
+              '\n', f"{'Inventory':^{pad}}{'Rename Gear':^{pad}}{'Consumables':^{pad}}",
+              '\n', '-' * WIN_WIDTH, sep='')
     elif context == 'renaming':
         print(f"\n{'Options:'}",
-              '\n', '-' * 60,
+              '\n', '-' * WIN_WIDTH,
               '\n', f"{'[1]':^30}{'[2]':^30}",
               '\n', f"{'New Name':^30}{'[Revert Name]':^30}",
-              '\n', '-' * 60, sep='')
+              '\n', '-' * WIN_WIDTH, sep='')
     elif context == 'combat':
         print(f"\n{'[C]':^15}{'[I]':^15}{'[W]':^15}{'[R]':^15}",
               '\n', f"{'Consumables':^15}{'Inventory':^15}{'Wait':^15}{'Run Away':^15}",
-              '\n', '-' * 60,sep='')
+              '\n', '-' * WIN_WIDTH, sep='')
     elif context == 'village':
         print('\nOptions: ',
-              '\n', '-' * 60,
-              '\n', f"{'[W]':^20}{'[A]':^20}{'[]':^20}",
-              '\n', f"{'Weaponsmith':^20}{'Armorsmith':^20}{'Apothecary':^20}",
-              '\n', f"{'[]':^20}{'[]':^20}{'[L]':^20}",
-              '\n', f"{'Tavern':^20}{'Inn':^20}{'Leave':^20}",
-              '\n', '-' * 60, sep='')
+              '\n', '-' * WIN_WIDTH,
+              '\n', f"{'[W]':^{pad}}{'[A]':^{pad}}{'[]':^{pad}}",
+              '\n', f"{'Weaponsmith':^{pad}}{'Armorsmith':^{pad}}{'Apothecary':^{pad}}",
+              '\n', f"{'[]':^{pad}}{'[]':^{pad}}{'[L]':^{pad}}",
+              '\n', f"{'Tavern':^{pad}}{'Inn':^{pad}}{'Leave':^{pad}}",
+              '\n', '-' * WIN_WIDTH, sep='')
     elif context == 'w':  # weaponsmith
         print(f"\n{'Options:'}",
-              '\n', '-' * 60,
-              '\n', f"{'[]':^20}{'[S]':^20}{'[L]':^20}",
-              '\n', f"{'Buy':^20}{'Sell':^20}{'Leave':^20}",
-              '\n', f"{'[]':^20}{'[E]':^20}",
-              '\n', f"{'Repair':^20}{'Enhance':^20}",
-              '\n', '-' * 60, sep='')
+              '\n', '-' * WIN_WIDTH,
+              '\n', f"{'[]':^{pad}}{'[S]':^{pad}}{'[L]':^{pad}}",
+              '\n', f"{'Buy':^{pad}}{'Sell':^{pad}}{'Leave':^{pad}}",
+              '\n', f"{'[]':^{pad}}{'[E]':^{pad}}",
+              '\n', f"{'Repair':^{pad}}{'Enhance':^{pad}}",
+              '\n', '-' * WIN_WIDTH, sep='')
     elif context == 'a':  # armorsmith
         print(f"\n{'Options:'}",
-              '\n', '-' * 60,
-              '\n', f"{'[]':^20}{'[S]':^20}{'[L]':^20}",
-              '\n', f"{'Buy':^20}{'Sell':^20}{'Leave':^20}",
-              '\n', f"{'[]':^20}{'[E]':^20}",
-              '\n', f"{'Repair':^20}{'Enhance':^20}",
-              '\n', '-' * 60, sep='')
+              '\n', '-' * WIN_WIDTH,
+              '\n', f"{'[]':^{pad}}{'[S]':^{pad}}{'[L]':^{pad}}",
+              '\n', f"{'Buy':^{pad}}{'Sell':^{pad}}{'Leave':^{pad}}",
+              '\n', f"{'[]':^{pad}}{'[E]':^{pad}}",
+              '\n', f"{'Repair':^{pad}}{'Enhance':^{pad}}",
+              '\n', '-' * WIN_WIDTH, sep='')
 
 
-def enter_village(context):
-    print("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
-          "The street is still busy with life as people walk among the shops to trade. "
-          "You can hear music playing from the tavern, and your stomach tightens at the smell "
-          "of hot stew and fresh bread. You feel anxious to finish your business here, "
-          "but staying a night or two couldn't hurt.")
+def enter_village():
+    print(wrapper("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
+                  "The street is still busy with life as people walk among the shops to trade. You can hear "
+                  "music playing from the tavern, and your stomach tightens at the smell of hot stew and fresh "
+                  "bread. You feel anxious to finish your business here, but staying a night or two couldn't hurt."))
     options('village')
     playing = input().lower()
     while playing != 'l':
         clear_console()
         if playing == 'w':
-            print("Following the rythmic beating of hammer to metal, you find the local weaponsmith. "
-                  "With a glance up from her work and a small nod, she acknowledges you and offers her inventory.")
+            print(wrapper("Following the rythmic beating of hammer to metal, you find the local weaponsmith. "
+                          "With a glance up from her work and a small nod, she acknowledges you and offers "
+                          "her inventory."))
             shop(playing)
         elif playing == 'a':
-            print("You spot the armorsmith near the village entrance. Various shields and a few half-decent riding"
-                  " tunics on display endure what might well be their thousanth tortured day in the full sun.")
+            print(wrapper("You spot the armorsmith near the village entrance. Various shields and a few half-decent "
+                          "riding tunics on display endure what might well be their thousanth tortured day in the "
+                          "full sun."))
             shop(playing)
         # elif playing == 'p':
         #     apothecary()
@@ -299,11 +319,11 @@ def shop(shop_choice):
         clear_console()
         if shop_choice in ['w', 'a']:
             # if service_option == 'b':
-                # buying(shop_choice)
+            # buying(shop_choice)
             if service_option == 's':
                 selling(Gear, shop_choice, service_option)
-            elif service_option == 'r':
-                repair(shop_choice, service_option)
+            # elif service_option == 'r':
+            #     repair(shop_choice, service_option)
             elif service_option == 'e':
                 enhance(shop_choice, service_option)
             elif service_option == 'i':
@@ -316,29 +336,30 @@ def enhance(shop_choice, service_option):
     gear_list = hero.get_list_of_all(Gear, shop_choice, service_option)
     if gear_list:
         print(f"Gold:{hero.gold:>55}")
-        print('-' * 60)
+        print('-' * WIN_WIDTH)
         if hero.display_item_list(Gear, shop_choice, service_option, gear_list):
-            print('-' * 60)
-            choice = input("What would you like enhanced?  (O indicates enhancement available)\n")
+            print('-' * WIN_WIDTH)
+            choice = input("What would you like enhanced?  "
+                           "(O indicates enhancement available)\n")
             # SELECTION
             for index, item in enumerate(gear_list):
                 if choice == str(index + 1):
                     print("Sure, hon. I can enhance the following on that;")
                     hotkey, d = 1, {}
-                    cost = max(int(item.value/10), 1)
-                    if item.melee_boost_scalar < 1:
+                    cost = max(int(item.value/3), 1)
+                    if item.melee_boost_scalar < 1 and item.melee_boost > 0:
                         print(f"[{hotkey}] {'melee power':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'melee'
                         hotkey += 1
-                    if item.magic_boost_scalar < 1:
+                    if item.magic_boost_scalar < 1 and item.magic_boost > 0:
                         print(f"[{hotkey}] {'magic power':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'magic'
                         hotkey += 1
-                    if item.hp_regen_scalar < 1:
+                    if item.hp_regen_scalar < 1 and item.hp_regen > 0:
                         print(f"[{hotkey}] {'health regen':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'hp_regen'
                         hotkey += 1
-                    if item.mp_regen_scalar < 1:
+                    if item.mp_regen_scalar < 1 and item.mp_regen > 0:
                         print(f"[{hotkey}] {'mana regen':14}{'Cost: '}{cost} gold")
                         d[hotkey] = 'mp_regen'
                     choice = input()
@@ -366,7 +387,7 @@ def enhance(shop_choice, service_option):
                                     item.value = max(int(item.value + item.value/3), 1)
                                     hero.gold -= cost
                                 if item.melee_boost_scalar + item.magic_boost_scalar\
-                                        + item.hp_regen_scalar + item.mp_regen_scalar == 4:
+                                        + item.hp_regen_scalar + item.mp_regen_scalar == item.max_at:
                                     item.value = int(item.init_value * 1.6)
                                     item.fully_enhanced = True
                                     item.name = '*' + item.name
@@ -381,8 +402,8 @@ def enhance(shop_choice, service_option):
         print("You've got nothing that needs my touch.")
 
 
-def repair(shop_choice, service_option):
-    pass
+# def repair(shop_choice, service_option):
+#     pass
 
 
 def selling(class_type, shop_choice, service_option):
@@ -390,9 +411,9 @@ def selling(class_type, shop_choice, service_option):
     item_list = hero.get_list_of_all(class_type, shop_choice, service_option)
     if item_list:
         print(f"Gold:{hero.gold:>55}")
-        print('-' * 60)
+        print('-' * WIN_WIDTH)
         hero.display_item_list(Gear, shop_choice, service_option, item_list)
-        print('-' * 60)
+        print('-' * WIN_WIDTH)
         choice = input("What would you like to sell?\n").lower()
         # SELECTION
         for index, item in enumerate(item_list):
@@ -449,13 +470,13 @@ def get_NPC_response(context, tier=None):
 
 def event_roll():
     hero.regen('roaming')
-    rngesus = random.randint(1, 100)
+    rngesus = random.uniform(0, 1)
 
-    if rngesus > 75 and hero.dist > 100:
-        encounter(create_mob(*random.choice(list_of_bosses)))
-    elif rngesus > 30:
-        encounter(create_mob(*random.choice(list_of_mobs)))
-    elif rngesus > 10:
+    if rngesus > 0.75 and hero.dist > 100:
+        encounter(create_mob(*random.choice(list_of_bosses), hero.dist))
+    elif rngesus > 0.30:
+        encounter(create_mob(*random.choice(list_of_mobs), hero.dist))
+    elif rngesus > 0.10:
         print("You walk through a field.\nNothing interesting happens.")
     else:
         chest()
@@ -464,7 +485,7 @@ def event_roll():
 def encounter(mob):
     # Initiates first turn of combat and the encounter's loop.
     print(f"You encounter a {mob.stats['race']}!")
-    mob.equip()
+    mob.equip(hero.dist)
     combat_template(mob)
     turn_start(mob)
 
@@ -594,7 +615,7 @@ def combat_template(mob):
         melee_boost_fmt = f"( +{str(int(mob.stats['melee_boost']))})"
     if mob.stats['magic_boost'] != 0:
         magic_boost_fmt = f"( +{str(int(mob.stats['magic_boost']))})"
-    print('-' * 60,
+    print('-' * WIN_WIDTH,
           f"\n{mob.stats['race']:^22}{'':16}{hero.name:^22}",
           f"\n{'['}{'+' * mob_hp_bar:20}{']'}{'Health':^16}{'['}{'+' * hero_hp_bar:20}{']'}",
           f"\n{mp_regen_fmt:>10}{mob.stats['mp_current']:>11}{'Mana':^16}{hero.stats['mp_current']:<20}",
@@ -602,7 +623,7 @@ def combat_template(mob):
           f"{(hero.stats['melee_base_atk'] + hero.stats['melee_boost']):<20}",
           f"\n{magic_boost_fmt:>10}{mob.stats['magic_base_atk']:>11}{'M. Attack':^16}"
           f"{(hero.stats['magic_base_atk'] + hero.stats['magic_boost']):<20}",
-          '\n', '-' * 60,
+          '\n', '-' * WIN_WIDTH,
           sep='')
 
 
@@ -618,7 +639,7 @@ def chest():
     if choice == 'y':
         for item in list_of_common_items:
             rngesus = random.uniform(0, 1)
-            if rngesus < 0.15 and count < 5:
+            if rngesus < 10.15 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
@@ -626,7 +647,7 @@ def chest():
         if hero.stats['burden_current'] < hero.stats['burden_limit']:
             rngesus = random.uniform(0, 1)
             if rngesus < 1 and count < 5:
-                chest_looting(Gear(*random.choice(list_of_gear)))
+                chest_looting(Gear(*random.choice(list_of_gear), hero.dist))
                 looted_item = True
                 count += 1
 
@@ -670,15 +691,12 @@ def move():  # should this be a class method?
             if new_dist <= hero.can_move:
                 hero.xpos = int(new_x)
                 hero.ypos = int(new_y)
-                hero.dist = math.sqrt(hero.xpos ** 2 + hero.ypos ** 2)
             else:
                 print("You can't travel that quickly yet.")
         else:
             print("Invalid coordinates.")
-            check_surroundings()
     elif choice in ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']:
         side_of_tri = math.floor(math.sqrt((hero.can_move ** 2) / 2))
-        choice = choice.lower()
         if choice == 'n':
             hero.ypos += hero.can_move
         elif choice == 'ne':
@@ -699,12 +717,9 @@ def move():  # should this be a class method?
         elif choice == 'nw':
             hero.xpos -= side_of_tri
             hero.ypos += side_of_tri
-        else:
-            print("Invalid direction.")
-            check_surroundings()
-        test = math.sqrt(hero.xpos ** 2 + hero.ypos ** 2)
-        print(test)
-        hero.dist = test
+    else:
+        print(f"'{choice}' is not a valid direction.")
+    hero.dist = math.sqrt(hero.xpos ** 2 + hero.ypos ** 2)
 
 
 def main():
@@ -714,13 +729,11 @@ def main():
 
     alive = True
     while alive:
-        village, lake, grove = check_surroundings()
+        near_village, near_lake, near_grove = check_surroundings()
         playing = input().lower()
         clear_console()
         if playing == 's':
             hero.display_character_sheet()
-        # elif playing == 'list':
-        # print("xp: ", hero.stats.xp, "level: ", hero.stats.level)
         elif playing == 'i':
             hero.display_inventory()
         elif playing == 'e':
@@ -734,25 +747,18 @@ def main():
         elif playing == 'm':
             move()
             event_roll()
-        elif playing == 'v' and village:
+        elif playing == 'v' and near_village:
             enter_village('from outside')
-        # elif playing == 'f' and lake:
+        # elif playing == 'f' and near_lake:
         #     fishing()
         elif playing == 'r':
             reset_name()
-        elif playing == '':
-            event_roll()
         elif playing == '=':
             save_game()
         elif playing == '-':
             load_game()
-        elif playing[0] == 'h':
-            for _ in playing:
-                x = ''
-                if hero.stats['mp_current'] >= 3:
-                    Heal(x, hero, "hero's turn")
         elif playing == 't':
-            encounter(create_mob(*kraken))
+            encounter(create_mob(*kraken), hero.dist)
         elif playing == 'x':
             chest()
         elif playing == 'stats':
@@ -760,9 +766,13 @@ def main():
                 print(f"{k:16}{': '}{int(v):>6}")
         elif playing == 'dist':
             print(hero.dist)
-        # else:
-        #     check_surroundings()
-        # check_surroundings()
+        elif playing == '':
+            event_roll()
+        elif playing[0] == 'h':
+            for _ in playing:
+                x = ''
+                if hero.stats['mp_current'] >= 3:
+                    Heal(x, hero, "hero's turn")
 
 
 main()
