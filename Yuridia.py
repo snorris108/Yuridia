@@ -14,6 +14,8 @@ import os
 # incorporate durability on weapons and armor, figure out how to handle items with diff durability states
 #     possibly only 3 tiers of degradation, to minimize amount of gear versions needed
 
+os.system('mode con: cols=75 lines=40')
+
 
 def intro():
     clear_console()
@@ -346,22 +348,22 @@ def enhance(shop_choice, service_option):
                                 if v == 'melee':
                                     item.melee_boost_scalar += 0.25
                                     item.melee_boost = item.init_melee * item.melee_boost_scalar
-                                    item.value = max(int(item.value + item.value/12), 1)
+                                    item.value = max(int(item.value + item.value/3), 1)
                                     hero.gold -= cost
                                 elif v == 'magic':
                                     item.magic_boost_scalar += 0.25
                                     item.magic_boost = item.init_magic * item.magic_boost_scalar
-                                    item.value = max(int(item.value + item.value/12), 1)
+                                    item.value = max(int(item.value + item.value/3), 1)
                                     hero.gold -= cost
                                 elif v == 'hp_regen':
                                     item.hp_regen_scalar += 0.25
                                     item.hp_regen = item.init_hp_regen * item.hp_regen_scalar
-                                    item.value = max(int(item.value + item.value/12), 1)
+                                    item.value = max(int(item.value + item.value/3), 1)
                                     hero.gold -= cost
                                 elif v == 'mp_regen':
                                     item.mp_regen_scalar += 0.25
                                     item.mp_regen = item.init_mp_regen * item.mp_regen_scalar
-                                    item.value = max(int(item.value + item.value/12), 1)
+                                    item.value = max(int(item.value + item.value/3), 1)
                                     hero.gold -= cost
                                 if item.melee_boost_scalar + item.magic_boost_scalar\
                                         + item.hp_regen_scalar + item.mp_regen_scalar == 4:

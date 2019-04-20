@@ -570,7 +570,7 @@ def player():
                  'magic_base_atk': 25,
                  'magic_boost': 0,
                  'burden_current': 0,
-                 'burden_limit': 40,
+                 'burden_limit': 60,
                  'level': 1,
                  'xp': 0,
                  'prev_level_xp': 0,
