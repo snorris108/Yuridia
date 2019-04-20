@@ -516,12 +516,12 @@ class Mob:
         for _list in self.loot:
             for item in _list:
                 chance = random.uniform(0, 1)
-                if chance > 0.95:
+                if chance < 0.05:
                     if item not in hero.inventory:
                         hero.inventory.append(item)
                     quantity_looted = 1
                     if isinstance(item, Item):
-                        quantity_looted = random.randint(8, 12)
+                        quantity_looted = random.randint(1, 5)
                     item.quantity += quantity_looted
                     print(f"You have looted {quantity_looted} {item.name}.")
 
@@ -536,22 +536,22 @@ class Mob:
 def create_mob(race, hp_current, hp_base, hp_regen, mp_current, mp_base, mp_regen, melee_base_atk, melee_boost,
                melee_affinity, magic_base_atk, magic_boost, magic_affinity, level, xp_worth, loot, abilities,
                dist):
-    multiplier = max(dist/1000, 1)
+    multiplier = max(dist/10, 1)
     return Mob({'race': race,
-                'hp_current': hp_current * multiplier,
-                'hp_base': hp_base * multiplier,
-                'hp_regen': hp_regen * multiplier,
-                'mp_current': mp_current * multiplier,
-                'mp_base': mp_base * multiplier,
-                'mp_regen': mp_regen * multiplier,
-                'melee_base_atk': melee_base_atk * multiplier,
-                'melee_boost': melee_boost * multiplier,
-                'melee_affinity': melee_affinity * multiplier,
-                'magic_base_atk': magic_base_atk * multiplier,
-                'magic_boost': magic_boost * multiplier,
-                'magic_affinity': magic_affinity * multiplier,
+                'hp_current': int(hp_current * multiplier),
+                'hp_base': int(hp_base * multiplier),
+                'hp_regen': int(hp_regen * multiplier),
+                'mp_current': int(mp_current * multiplier),
+                'mp_base': int(mp_base * multiplier),
+                'mp_regen': int(mp_regen * multiplier),
+                'melee_base_atk': int(melee_base_atk * multiplier),
+                'melee_boost': int(melee_boost * multiplier),
+                'melee_affinity': int(melee_affinity * multiplier),
+                'magic_base_atk': int(magic_base_atk * multiplier),
+                'magic_boost': int(magic_boost * multiplier),
+                'magic_affinity': int(magic_affinity * multiplier),
                 'level': level,
-                'xp_worth': xp_worth},
+                'xp_worth': int(xp_worth * multiplier)},
                loot, abilities)
 
 

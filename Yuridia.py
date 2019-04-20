@@ -95,9 +95,9 @@ def check_surroundings():
     if near_village:
         print("[V] Enter the village")
     if near_lake:
-        print("[F] Fish at the lake")
+        print("[] Fish at the lake")
     if near_grove:
-        print("[W] Explore woods")
+        print("[] Explore woods")
     # if caves and lantern in hero.inventory:
     #     print("[N] Navigate the cave system")
     return near_village, near_lake, near_grove
@@ -229,9 +229,11 @@ def options(context):
               '\n', f"{'[Enter]':^{pad}}{'[=]':^{pad}}{'[H]':^{pad}}",
               '\n', f"{'Check surroundings':^{pad}}{'[Save progress]':^{pad}}{'Cast Heal':^{pad}}",
               '\n', f"{'[S]':^{pad}}{'[E]':^{pad}}{'[A]':^{pad}}",
-              '\n', f"{'Character Sheet':^{pad}}{'Equipment':^{pad}}{'Abilities':^{pad}}",
-              '\n', f"{'[I]':^{pad}}{'[R]':^{pad}}{'[C]':^{pad}}",
-              '\n', f"{'Inventory':^{pad}}{'Rename Gear':^{pad}}{'Consumables':^{pad}}",
+              '\n', f"{'Character Sheet':^{pad}}{'Equip':^{pad}}{'Abilities':^{pad}}",
+              '\n', f"{'[I]':^{pad}}{'[U]':^{pad}}{'[C]':^{pad}}",
+              '\n', f"{'Inventory':^{pad}}{'Unequip':^{pad}}{'Consumables':^{pad}}",
+              '\n', f"{'':^{pad}}{'[R]':^{pad}}{'':^{pad}}"
+              '\n', f"{'':^{pad}}{'[Rename Gear]':^{pad}}{'':^{pad}}"
               '\n', '-' * WIN_WIDTH, sep='')
     elif context == 'renaming':
         print(f"\n{'Options:'}",
@@ -420,10 +422,12 @@ def selling(class_type, shop_choice, service_option):
             if choice == str(index + 1):
                 if shop_choice in ['w', 'a']:  # bc some shops deal in stackables, while 'w' and 'a' don't
                     clear_console()
-                    hero.gold += item.value
-                    hero.inventory.remove(item)
                     response = get_NPC_response(shop_choice, item.tier)
                     print(response)
+                    if hasattr(item, 'burden'):
+                        hero.stats['burden_current'] -= item.burden
+                    hero.gold += item.value
+                    hero.inventory.remove(item)
                 # number = 1
                 # if item[0].quantity > 1:
                 #     number = input("How many? You have " + str(item[0].quantity) + '.\n')
@@ -442,6 +446,17 @@ def selling(class_type, shop_choice, service_option):
                 #       sep='')
     else:
         print("You have nothing to sell here.")
+
+
+# def woods():
+#     print(wrapper("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
+#                   "The street is still busy with life as people walk among the shops to trade. You can hear "
+#                   "music playing from the tavern, and your stomach tightens at the smell of hot stew and fresh "
+#                   "bread. You feel anxious to finish your business here, but staying a night or two couldn't hurt."))
+#     options('village')
+#     playing = input().lower()
+#     while playing != 'l':
+#         clear_console()
 
 
 def reset_name():
@@ -639,7 +654,7 @@ def chest():
     if choice == 'y':
         for item in list_of_common_items:
             rngesus = random.uniform(0, 1)
-            if rngesus < 10.15 and count < 5:
+            if rngesus < 0.15 and count < 5:
                 chest_looting(item)
                 looted_item = True
                 count += 1
@@ -669,7 +684,7 @@ def chest_looting(item):
             hero.stats['burden_current'] += item.burden
             print(f"You find a {item.name} and add it to your pack.")
     else:
-        num_rolled = random.randrange(1, 4)
+        num_rolled = random.randint(1, 4)
         if item not in hero.inventory:
             hero.inventory.append(item)
         item.quantity += num_rolled
@@ -757,6 +772,8 @@ def main():
             save_game()
         elif playing == '-':
             load_game()
+        # elif playing == 'w':
+        #     enter_woods()
         elif playing == 't':
             encounter(create_mob(*kraken, hero.dist))
         elif playing == 'x':

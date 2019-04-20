@@ -6,7 +6,7 @@ import random
 class Gear:
     def __init__(self, name, value, tier, burden, dmg_style, slot,
                  melee_boost, magic_boost, poison_boost, hp_regen, mp_regen, dist):
-        multiplier = max(dist/10, 1)
+        multiplier = max(dist/100, 1)
         self.name = name
         self.value = value
         self.init_value = value  # possibly not needed, value *= 1.083 for each enhance
@@ -14,7 +14,6 @@ class Gear:
         self.burden = burden
         self.dmg_style = dmg_style
         self.slot = slot
-        # can enhance scalars < 1 at a smith
         self.melee_boost_scalar = random.choice([0.5, 0.75, 1]) if melee_boost else 0
         self.magic_boost_scalar = random.choice([0.5, 0.75, 1]) if magic_boost else 0
         self.hp_regen_scalar = random.choice([0.5, 0.75, 1]) if hp_regen else 0
@@ -147,6 +146,7 @@ thread_worms = Item('thread worms', 4, 'bait')
 # logs = Item('logs', 1, 2)
 # worn_hatchet = Tool('worn hatchet', 1, 4, 20)
 
+Pavollos_shade = Item('Pavollo\'s shade', None, 'quest', 1)
 
 list_of_consumables = [potion, ether, elixir, beer]
 list_of_bait = [ilan_berries, thread_worms]
