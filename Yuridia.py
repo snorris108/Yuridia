@@ -1,5 +1,6 @@
 from classes import *
 
+import sys
 import time
 import pickle
 
@@ -18,7 +19,7 @@ pyinstaller -i Yuridia.ico -F Yuridia.py
 #     possibly only 3 tiers of degradation, to minimize amount of gear versions needed
 
 
-def wrapper(text):
+def wrapper(text, speed=0.000001):
     words, lines = text.split(' '), [[]]
     curr_len, final_string = 0, ''
     for word in words:
@@ -32,20 +33,29 @@ def wrapper(text):
     for line in lines:
         for word in line:
             final_string += word
-    return final_string
+    for char in final_string:
+        sys.stdout.write(char)
+        time.sleep(speed)
+
+
+def startup_menu():
+    # clear_console()
+    print("Welcome to Yuridia.")
+    print("1 - New Game")
+    print("2 - Load Game")
 
 
 def intro():
     clear_console()
     print('-' * 60)
-    print(wrapper("You awaken suddenly, a distant cry of pain from an unsettling dream still echoing in your mind. "
-                  "Around you, the cave is still and damp. A sharp edge of light cuts across the floor, and as your "
-                  "eyes adjust you hear the cry again, closer. A deer, possibly, finding its mortality. "
-                  "\nYou gather your gear and leave your dwelling."))
+    wrapper("You awaken suddenly, a distant cry of pain from an unsettling dream still echoing in your mind. "
+            "Around you, the cave is still and damp. A sharp edge of light cuts across the floor, and as your "
+            "eyes adjust you hear the cry again, closer. A deer, possibly, finding its mortality. "
+            "\nYou gather your gear and leave your dwelling.")  # , 0.05)
 
 
 def create_hero():
-    option = input("What do they call you?\n")
+    option = input("\nWhat do they call you?\n")
     if option == '-':
         hero = load_game()
     else:
@@ -63,8 +73,7 @@ def load_game():
             print("Previous progress loaded.")
             return pickle.load(infile)
     else:
-        print("You have no saved progress.")
-        return create_hero()
+        return False
 
 
 def save_game():
@@ -81,69 +90,100 @@ def clear_console():
 def check_surroundings():
     print()
     near_village = compass(4, 12, 100,
-                           "You think you see smoke rising over the treetops to the ",
-                           "Your path forks off toward a village.")
+                           "\nYou think you see smoke rising over the treetops to the ",
+                           "\nYour path forks off toward a village.")
     near_lake = compass(6, 18, 120,
-                        "A gentle river is flowing away toward the ",
-                        "You stand at the shoreline of a small lake.")
+                        "\nA gentle river is flowing away toward the ",
+                        "\nYou stand at the shoreline of a small lake.")
     near_grove = compass(6, 14, 60,
-                         "An old grove of redwood stands tall to the ",
-                         "The wood from these trees would make a strong fire.")
+                         "\nAn old grove of redwood stands tall to the ",
+                         "\nThe wood from these trees would make a strong fire.")
     # caves = compass(2, 4, 137, "")
 
     options('check surroundings')
     if near_village:
         print("[V] Enter the village")
     if near_lake:
-        print("[] Fish at the lake")
+        print("[L] Fish at the lake")
     if near_grove:
-        print("[] Explore woods")
+        print("[W] Explore woods")
     # if caves and lantern in hero.inventory:
     #     print("[N] Navigate the cave system")
     return near_village, near_lake, near_grove
 
 
-# def fishing():
-#     list = hero.get_list_of_all(Bait, '')
-#     if list:
-#         bait = ''
-#         fish = ''
-#         choice = input("What bait would you like to use?\n")
-#         for i in list:  # [obj, str], [...
-#             if choice == str(i[1]):
-#                 bait = i[0]
-#         fish_types = {herring: ilan_berries, salmon: thread_worms}
-#         for k, v in fish_types.items():  # k-obj fish  v-obj bait
-#             if bait == v:
-#                 fish = k
-#         print("You attempt to catch a fish.")
-#         time.sleep(random.randint(1, 10) * 0.5)
-#         print("You get a bite!")
-#         start = round(time.clock(), 4)
-#         # stop = 0
-#         Time = 10
-#         catch = input()
-#         if catch == '':
-#             stop = round(time.clock(), 4)
-#             Time = round((stop - start), 4)
-#             # print(start, stop, (stop - start))
-#         if Time < 0.6:
-#             print("You caught a ", fish.name, ".  ", Time, sep='')
-#             if fish not in hero.inventory:
-#                 hero.inventory.append(fish)
-#             bait.quantity -= 1
-#             if bait.quantity == 0:
-#                 hero.inventory.remove(bait)
-#             fish.quantity += 1
-#             print("You have ", bait.quantity, ' ', bait.name, " left.", sep='')
-#         else:
-#             print("It slips away with your bait.  ", Time)
-#             bait.quantity -= 1
-#             if bait.quantity == 0:
-#                 hero.inventory.remove(bait)
-#             print(bait.quantity, ' ', bait.name)
-#     else:
-#         print("You have no bait.")
+def fishing():
+    bait_list = hero.get_list_of_all(Item, 'fishing')
+    if bait_list:
+        bait = ''
+        fish = ''
+        print('-' * WIN_WIDTH)
+        hero.display_item_list(Bait, 'fishing', None, bait_list)
+        print('-' * WIN_WIDTH)
+        choice = input("What bait would you like to use?\n")
+        for index, item in enumerate(bait_list):
+            if choice == str(index + 1):
+                bait = item
+        # for i in bait_list:  # [obj, str], [...
+        #     if choice == str(i[1]):
+        #         bait = i[0]
+        fish_types = {herring: ilan_berries, salmon: thread_worms}
+        for k, v in fish_types.items():  # k-obj fish  v-obj bait
+            if bait.name == v.name:
+                fish = k
+        print("You attempt to catch a fish.")
+        time.sleep(random.randint(1, 10) * 0.5)
+        print("You get a bite!")
+        start = round(time.perf_counter(), 4)
+        # stop = 0
+        Time = 10
+        catch = input()
+        if catch == '':
+            stop = round(time.perf_counter(), 4)
+            Time = round((stop - start), 4)
+            # print(start, stop, (stop - start))
+        if Time < 0.6:
+            print("You caught a ", fish.name, ".  ", Time, sep='')
+            if fish not in hero.inventory:
+                hero.inventory.append(fish)
+            bait.quantity -= 1
+            if bait.quantity == 0:
+                hero.inventory.remove(bait)
+            fish.quantity += 1
+            print("You have ", bait.quantity, ' ', bait.name, " left.", sep='')
+        else:
+            print("It slips away with your bait.  ", Time)
+            bait.quantity -= 1
+            if bait.quantity == 0:
+                hero.inventory.remove(bait)
+            print(bait.quantity, ' ', bait.name)
+    else:
+        print("You have no bait.")
+
+
+def enter_woods():
+    herbs_nearby = False
+    wrapper("You make your way to the center of an old grove, the sweet musk of redwood clouding the boundary "
+            "between your body and your surroundings.", 0.05)
+    if pariahs_rothii not in hero.inventory:
+        wrapper("\nYou pick up subtle notes of rose buds and dark cherry.", 0.05)
+        herbs_nearby = True
+    options('woods', herbs_nearby)
+    playing = input().lower()
+    while playing != 'l':
+        clear_console()
+        if playing == 'c':
+            wrapper("Setting down your pack, you unstrap your hatchet and walk over to a felled tree. After "
+                    "a few minutes, you collect some firewood.", 0.05)
+        elif playing == 'g':
+            wrapper("Following the distinctive scent, you find a thick patch of flowered moss on the sunside of a "
+                    "boulder, its brilliant violet petals browning against the warm rock.", 0.05)
+            wrapper("\nYou collect the Pariah's Rothii.", 0.05)
+            hero.inventory.append(pariahs_rothii)
+            herbs_nearby = False
+        options('woods', herbs_nearby)
+        playing = input().lower()
+    clear_console()
 
 
 def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
@@ -213,14 +253,14 @@ def compass(visible_near, visible_far, freq_on_map, far_message, near_message):
                 direction = 'south-east.'
             elif hero.xpos < xnearest_event and hero.ypos < ynearest_event:
                 direction = 'north-east.'
-        print(wrapper(far_message + direction))
+        wrapper(far_message + direction)
     elif distance <= visible_near:
-        print(wrapper(near_message))
+        wrapper(near_message)
         within_range = True
     return within_range
 
 
-def options(context):
+def options(context, condition=False):
     pad = int(WIN_WIDTH/3)
     if context == 'check surroundings':
         padding = ' ' * (WIN_WIDTH - 8 - len(hero.view_location()))
@@ -269,26 +309,36 @@ def options(context):
               '\n', f"{'[]':^{pad}}{'[E]':^{pad}}",
               '\n', f"{'Repair':^{pad}}{'Enhance':^{pad}}",
               '\n', '-' * WIN_WIDTH, sep='')
+    elif context == 'woods':
+        print(f"\n{'Options:'}",
+              '\n', '-' * WIN_WIDTH,
+              '\n', f"{'[C]':^{pad}}{'':^{pad}}{'[L]':^{pad}}",
+              '\n', f"{'Chop firewood':^{pad}}{'':^{pad}}{'Leave':^{pad}}", sep='')
+        if condition:
+            print(f"{'[G]':^{pad}}{'':^{pad}}{'':^{pad}}",
+                  '\n', f"{'Gather herbs':^{pad}}{'':^{pad}}{'':^{pad}}", sep='')
+        print('-' * WIN_WIDTH, sep='')
 
 
 def enter_village():
-    print(wrapper("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
+    wrapper("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
                   "The street is still busy with life as people walk among the shops to trade. You can hear "
                   "music playing from the tavern, and your stomach tightens at the smell of hot stew and fresh "
-                  "bread. You feel anxious to finish your business here, but staying a night or two couldn't hurt."))
+                  "bread. You feel anxious to finish your business here, but staying a night or two couldn't hurt.",
+                  0.05)
     options('village')
     playing = input().lower()
     while playing != 'l':
         clear_console()
         if playing == 'w':
-            print(wrapper("Following the rythmic beating of hammer to metal, you find the local weaponsmith. "
+            wrapper("Following the rythmic beating of hammer to metal, you find the local weaponsmith. "
                           "With a glance up from her work and a small nod, she acknowledges you and offers "
-                          "her inventory."))
+                          "her inventory.", 0.05)
             shop(playing)
         elif playing == 'a':
-            print(wrapper("You spot the armorsmith near the village entrance. Various shields and a few half-decent "
+            wrapper("You spot the armorsmith near the village entrance. Various shields and a few half-decent "
                           "riding tunics on display endure what might well be their thousanth tortured day in the "
-                          "full sun."))
+                          "full sun.", 0.05)
             shop(playing)
         # elif playing == 'p':
         #     apothecary()
@@ -449,10 +499,11 @@ def selling(class_type, shop_choice, service_option):
 
 
 # def woods():
-#     print(wrapper("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
+#     wrapper("As the afternoon sun touches the tops of the trees, you enter the gates of a small village. "
 #                   "The street is still busy with life as people walk among the shops to trade. You can hear "
 #                   "music playing from the tavern, and your stomach tightens at the smell of hot stew and fresh "
-#                   "bread. You feel anxious to finish your business here, but staying a night or two couldn't hurt."))
+#                   "bread. You feel anxious to finish your business here, but staying a night or two couldn't hurt.",
+#                   0.05))
 #     options('village')
 #     playing = input().lower()
 #     while playing != 'l':
@@ -739,8 +790,25 @@ def move():  # should this be a class method?
 
 def main():
     global hero
-    intro()
-    hero = create_hero()
+    hero = False
+    msg = ''
+    while hero is False:
+        clear_console()
+        if msg:
+            print(msg)
+        startup_menu()
+        choice = input()
+        if choice == '1':
+            intro()
+            hero = create_hero()
+        elif choice == '2':
+            hero = load_game()
+            if hero is False:
+                msg = 'You have no saved progress.\n'
+        else:
+            msg = 'Invalid choice.\n'
+            continue
+
 
     alive = True
     while alive:
@@ -764,16 +832,16 @@ def main():
             event_roll()
         elif playing == 'v' and near_village:
             enter_village()
-        # elif playing == 'f' and near_lake:
-        #     fishing()
+        elif playing == 'l' and near_lake:
+            fishing()
+        elif playing == 'w' and near_grove:
+            enter_woods()
         elif playing == 'r':
             reset_name()
         elif playing == '=':
             save_game()
         elif playing == '-':
             load_game()
-        # elif playing == 'w':
-        #     enter_woods()
         elif playing == 't':
             encounter(create_mob(*kraken, hero.dist))
         elif playing == 'x':

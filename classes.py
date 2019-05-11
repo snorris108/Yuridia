@@ -342,6 +342,14 @@ class Char:
                 for item in self.inventory:
                     if isinstance(item, Gear) and not ('Mainhand' in item.slot or 'Offhand' in item.slot):
                         item_list.append(item)
+        elif context == 'fishing':
+            for item in self.inventory:
+                if isinstance(item, Gear):
+                    continue
+                elif isinstance(item, Bait):
+                    item_list.append(item)
+            item_list.sort(key=lambda k: (k.tier), reverse=True)
+            return item_list
         else:
             for item in self.inventory:
                 if isinstance(item, class_type):
@@ -414,6 +422,10 @@ class Char:
                         if item.mp_gain:
                             effect += f"(+{item.mp_gain}mp)"
                         print(f"{hotkey:6}{item.name:10}{quantity:10}{effect:36}")
+                    elif class_type == Bait:
+                        quantity = f"({str(item.quantity)})"
+                        print(f"{hotkey:6}{item.name:10}{quantity:10}")
+
         else:
             return False
 

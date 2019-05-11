@@ -43,24 +43,36 @@ class Gear:
         self.default_name = name
 
 
-
 class Item:
-    def __init__(self, name, value, _type=None, quantity=0):
+    def __init__(self, name, value, tier=0, quantity=0):
         self.name = name
         self.value = value
-        self._type = _type
+        # self.item_type = item_type
+        self.tier = tier
         self.quantity = quantity
 
 
 class Consumable(Item):
     def __init__(self, name, value, hp_gain, mp_gain,
-                 melee_boost, magic_boost, xp_worth, _type=None, quantity=0):
-        super().__init__(name, value, _type, quantity)
+                 melee_boost, magic_boost, xp_worth, item_type=None, quantity=0):
+        super().__init__(name, value, item_type, quantity)
         self.hp_gain = hp_gain
         self.mp_gain = mp_gain
         self.melee_boost = melee_boost
         self.magic_boost = magic_boost
         self.xp_worth = xp_worth
+
+
+class Bait(Item):
+    def __init__(self, name, value, tier):
+        super().__init__(name, value)
+        self.tier = tier
+
+
+class Fish(Item):
+    def __init__(self, name, value, tier):
+        super().__init__(name, value)
+        self.tier = tier
 
 
 class Tool(Item):
@@ -82,7 +94,7 @@ blessed_mace = ['blessed mace',             18, 1, 2, 'melee', ['Mainhand', 'Off
 scimitar = ['scimitar',                     16, 1, 2, 'melee', ['Mainhand', 'Offhand'], 20, 0, 0, 0, 0]
 rapier = ['rapier',                         18, 1, 1, 'melee', ['Mainhand', 'Offhand'], 18, 0, 0, 0, 0]
 gladius = ['gladius',                       28, 1, 2, 'melee', ['Mainhand', 'Offhand'], 24, 0, 0, 0, 0]
-targe = ['targe',                           6, 1, 2, 'melee, defense', ['Offhand'],    8, 0, 0, 0, 0]
+targe = ['targe',                           6, 1, 2, 'melee, defense', ['Offhand'],     8, 0, 0, 0, 0]
 buckler = ['buckler',                       10, 1, 2, 'melee, defense', ['Offhand'],    12, 0, 0, 0, 0]
 ilan_branch = ['ilan branch',               1, 1, 1, 'magic', ['Mainhand', 'Offhand'],  0, 7, 0, 0, 1]
 wand = ['wand',                             16, 1, 1, 'magic', ['Mainhand', 'Offhand'], 0, 16, 0, 0, 2]
@@ -103,50 +115,50 @@ kings_blade = ["King's Blade",              26, 3, 6, 'melee', ['Mainhand', 'Off
 old_ring = ['old ring',                     28, 3, 1, 'magic', ['Ring'],                0, 6, 0, 0, 1]
 
 list_of_gear = [small_dagger,
-ilorian_dagger,
-ilorian_shortsword,
-ilorian_longsword,
-ilorian_claymore,
-flanged_mace,
-spiked_mace,
-blessed_mace,
-scimitar,
-rapier,
-gladius,
-kings_blade,
-ilan_branch,
-wand,
-targe,
-glimmering_orb,
-leather_cap,
-heavy_tunic,
-thick_chaps,
-iron_gloves,
-cut_boots,
-old_ring,
-clay_ring,
-crooked_staff,
-buckler,
-flawless_skull,
-jeweled_hood,
-corded_robes,
-silk_hosen]
+                ilorian_dagger,
+                ilorian_shortsword,
+                ilorian_longsword,
+                ilorian_claymore,
+                flanged_mace,
+                spiked_mace,
+                blessed_mace,
+                scimitar,
+                rapier,
+                gladius,
+                kings_blade,
+                ilan_branch,
+                wand,
+                targe,
+                glimmering_orb,
+                leather_cap,
+                heavy_tunic,
+                thick_chaps,
+                iron_gloves,
+                cut_boots,
+                old_ring,
+                clay_ring,
+                crooked_staff,
+                buckler,
+                flawless_skull,
+                jeweled_hood,
+                corded_robes,
+                silk_hosen]
 
 potion = Consumable('potion', 14, 100, 0, 0, 0, 0)
 ether = Consumable('ether', 21, 0, 18, 0, 0, 0)
 elixir = Consumable('elixir', 58, 0, 48, 0, 0, 0)
 beer = Consumable('beer', 12, 45, 18, 0, 0, 100)
 
-ilan_berries = Item('ilan berries', 4, 'bait')
-thread_worms = Item('thread worms', 4, 'bait')
+ilan_berries = Bait('ilan berries', 4, 10)
+thread_worms = Bait('thread worms', 4, 20)
 
-# herring = Item('herring', 1, 6)
-# salmon = Item('salmon', 1, 6)
+herring = Fish('herring', 12, 10)
+salmon = Fish('salmon', 16, 20)
 #
 # logs = Item('logs', 1, 2)
 # worn_hatchet = Tool('worn hatchet', 1, 4, 20)
 
-Pavollos_shade = Item('Pavollo\'s shade', None, 'quest', 1)
+pariahs_rothii = Item('Pariah\'s Rothii', 0, 1, 1)
 
 list_of_consumables = [potion, ether, elixir, beer]
 list_of_bait = [ilan_berries, thread_worms]
