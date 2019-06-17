@@ -622,3 +622,4 @@ kraken = ['Kraken',         5000, 5000, 0, 79, 79, 4, 72, 0, 0.35, 68, 0, 0.65, 
 
 list_of_mobs = [thief, kaelas_boar, wolves, cultist]
 list_of_bosses = [giant_kitty, kraken]
+
